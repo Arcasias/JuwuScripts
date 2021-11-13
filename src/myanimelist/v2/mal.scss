@@ -1,0 +1,599 @@
+/*****************************************************************************/
+/* MYANIMELIST: Anime list stylesheet by Arcasias                            */
+/*****************************************************************************/
+
+$primary: #ff4080;
+$primary-highlight: lighten($primary, 10%);
+
+$secondary: #4080ff;
+$secondary-highlight: lighten($primary, 10%);
+
+$black: #202030;
+$dark-gray: #303040;
+$light-gray: #cfcfdf;
+$white: #ebebf5;
+
+$completed: lighten(#26448f, 15%);
+$completed-contrast: $white;
+$watching: lighten(#2db039, 10%);
+$watching-contrast: $dark-gray;
+$onhold: lighten(#f1c83e, 10%);
+$onhold-contrast: $black;
+$dropped: lighten(#a12f31, 10%);
+$dropped-contrast: $white;
+$plantowatch: lighten(#c3c3c3, 10%);
+$plantowatch-contrast: $black;
+
+$score-1: #ff0000;
+$score-2: #ff3f00;
+$score-3: #ff7f00;
+$score-4: #ffbf00;
+$score-5: #ffff00;
+$score-6: #bfff00;
+$score-7: #7fff00;
+$score-8: #3fff00;
+$score-9: #00ff00;
+$score-10: #00ffff;
+
+$max-width: 1360px;
+$card-padding: 0.5rem;
+
+$img-width: 96px; // Can stretch to 128px
+$img-height: 136px; // Can stretch to 192px
+
+@mixin btn-primary($selector) {
+  #{$selector} {
+    color: $white !important;
+    background-color: $primary !important;
+    transition: color 0.15s, background-color 0.15s !important;
+
+    &:hover {
+      color: $white !important;
+      background-color: $primary-highlight !important;
+    }
+  }
+}
+
+@mixin btn-border-primary($selector, $border-property: "border") {
+  #{$selector} {
+    color: $primary !important;
+    #{$border-property}: 1px solid $primary !important;
+    transition: background-color 0.15s, color 0.15s,
+      #{$border-property}-color 0.15s !important;
+
+    &:hover {
+      color: $primary-highlight !important;
+      background-color: $black !important;
+      #{$border-property}-color: $primary-highlight !important;
+    }
+  }
+}
+
+body {
+  background-color: $dark-gray !important;
+  border: none !important;
+  padding: 0 1rem;
+  color: $light-gray !important;
+  fill: $light-gray !important;
+}
+
+* {
+  background-color: inherit !important;
+  border: none !important;
+  color: inherit !important;
+  fill: inherit !important;
+}
+
+input,
+select {
+  background-color: $black !important;
+  border-radius: 3px !important;
+  border: 1px solid $light-gray !important;
+}
+
+.header {
+  width: auto !important;
+  max-width: $max-width !important;
+}
+
+.list-container {
+  width: auto !important;
+  max-width: $max-width !important;
+
+  .cover-block {
+    display: flex !important;
+    width: auto !important;
+
+    #cover-image-container {
+      width: 100% !important;
+
+      #cover-image {
+        max-width: none !important;
+        width: 100% !important;
+        object-fit: cover !important;
+      }
+    }
+  }
+}
+
+.list-unit {
+  width: auto !important;
+
+  .list-stats {
+    font-size: 16px;
+    padding: 6px;
+    background-color: $black !important;
+  }
+
+  > .list-status-title {
+    width: 100% !important;
+
+    > .text {
+      border-width: 0.1rem !important;
+      border-style: solid !important;
+      border-radius: 5px;
+      text-align: left;
+      padding-left: 20px;
+      width: 100% !important;
+    }
+
+    > .stats {
+      height: auto;
+      line-height: normal;
+      top: 12.5px;
+    }
+  }
+
+  &.completed > .list-status-title > .text {
+    color: $completed !important;
+    border-color: $completed !important;
+  }
+
+  &.watching > .list-status-title > .text,
+  &.reading > .list-status-title > .text {
+    color: $watching !important;
+    border-color: $watching !important;
+  }
+
+  &.onhold > .list-status-title > .text {
+    color: $onhold !important;
+    border-color: $onhold !important;
+  }
+
+  &.dropped > .list-status-title > .text {
+    color: $dropped !important;
+    border-color: $dropped !important;
+  }
+
+  &.plantowatch > .list-status-title > .text,
+  &.plantoread > .list-status-title > .text {
+    color: $plantowatch !important;
+    border-color: $plantowatch !important;
+  }
+}
+
+.list-table {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+
+  > tbody:first-child {
+    flex-basis: 100%;
+  }
+
+  .list-table-header {
+    display: flex !important;
+    padding: 0 !important;
+    margin: 0.5rem 0 !important;
+
+    @include btn-border-primary(".header-title", "border-bottom");
+
+    .header-title {
+      flex: 1;
+      background-image: none !important;
+
+      .link.sort {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .sort-icon {
+          position: relative;
+          margin-left: 0.5rem !important;
+
+          &.fa-sort-asc {
+            top: 3px;
+          }
+
+          &.fa-sort-desc {
+            top: -2px;
+          }
+        }
+      }
+
+      &.image,
+      &.status {
+        display: none !important;
+      }
+    }
+  }
+
+  > .list-item {
+    flex: 1;
+    min-width: 196px !important;
+    height: 196px !important;
+    background-color: $black !important;
+    margin: 0.4rem !important;
+    position: relative !important;
+    border-radius: 5px !important;
+    padding: $card-padding !important;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+
+    .list-table-data {
+      flex: 1;
+      display: flex !important;
+      flex-flow: column nowrap;
+
+      .data {
+        display: flex !important;
+        align-items: center;
+        margin-left: calc(#{$img-width} + #{$card-padding});
+
+        &.status {
+          display: none !important;
+
+          &.completed ~ .data.progress > div {
+            background-color: $completed !important;
+            color: $completed-contrast !important;
+          }
+          &.watching ~ .data.progress > div,
+          &.reading ~ .data.progress > div {
+            background-color: $watching !important;
+            color: $watching-contrast !important;
+          }
+          &.onhold ~ .data.progress > div {
+            background-color: $onhold !important;
+            color: $onhold-contrast !important;
+          }
+          &.dropped {
+            ~ .data.progress > div {
+              background-color: $dropped !important;
+              color: $dropped-contrast !important;
+            }
+            ~ .data.image {
+              filter: grayscale(100%) !important;
+            }
+          }
+          &.plantowatch ~ .data.progress > div,
+          &.plantoread ~ .data.progress > div {
+            background-color: $plantowatch !important;
+            color: $plantowatch-contrast !important;
+          }
+        }
+
+        &.image {
+          position: absolute !important;
+          bottom: $card-padding;
+          left: $card-padding;
+          padding: 0 !important;
+          margin: 0;
+
+          img {
+            width: $img-width !important;
+            height: $img-height !important;
+            border-radius: 3px !important;
+          }
+        }
+
+        &.title {
+          color: $white !important;
+          justify-content: space-between;
+          margin: 0 !important;
+          padding: 0 !important;
+          height: 3rem;
+
+          .link {
+            flex: 8;
+
+            &:hover {
+              color: $primary !important;
+            }
+          }
+
+          .add-edit-more {
+            flex: 1;
+            visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            color: $light-gray !important;
+            margin: 0 !important;
+            align-self: flex-start;
+
+            > span {
+              visibility: visible;
+            }
+
+            .more {
+              margin-top: -1rem;
+            }
+          }
+
+          &::after,
+          .icon-watch {
+            display: none !important;
+          }
+        }
+
+        &.score {
+          background-color: transparent !important;
+          justify-content: center;
+          align-items: center;
+          position: absolute;
+          bottom: $card-padding;
+          right: $card-padding;
+
+          .score-label {
+            justify-content: center !important;
+            align-items: center !important;
+            display: flex !important;
+            border-radius: 50% !important;
+            border-style: solid !important;
+            border-width: 3px !important;
+            width: 2rem !important;
+            height: 2rem !important;
+            font-size: 12pt;
+            background-color: $black !important;
+            box-shadow: 0 0 0.5rem rgba($black, 0.5);
+
+            &.score-10 {
+              overflow: hidden !important;
+              justify-content: start !important;
+
+              &::before {
+                content: "\2605" !important;
+                font-size: 1.5em;
+                margin-top: -3px;
+                padding-right: 100px;
+                padding-left: 0.36rem;
+              }
+            }
+          }
+
+          > select {
+            margin-left: 0.5rem;
+          }
+        }
+
+        &.type {
+          order: 2;
+        }
+
+        &.progress {
+          order: 1;
+          margin-top: 0.5rem;
+
+          > div {
+            padding: 0.2rem 0.3rem !important;
+            border-radius: 5px !important;
+
+            input[type="text"] {
+              color: $white !important;
+            }
+          }
+        }
+      }
+
+      .tags textarea {
+        outline: none !important;
+        padding: 8px 5px !important;
+      }
+    }
+
+    .more-info {
+      margin-top: 5rem;
+
+      .more-content {
+        border-radius: 5px !important;
+        background-color: $black !important;
+      }
+    }
+  }
+}
+
+.data.score > select > option:nth-child(11),
+.score-label.score-10 {
+  border-color: $score-10 !important;
+  color: $score-10 !important;
+}
+.data.score > select > option:nth-child(10),
+.score-label.score-9 {
+  border-color: $score-9 !important;
+  color: $score-9 !important;
+}
+.data.score > select > option:nth-child(9),
+.score-label.score-8 {
+  border-color: $score-8 !important;
+  color: $score-8 !important;
+}
+.data.score > select > option:nth-child(8),
+.score-label.score-7 {
+  border-color: $score-7 !important;
+  color: $score-7 !important;
+}
+.data.score > select > option:nth-child(7),
+.score-label.score-6 {
+  border-color: $score-6 !important;
+  color: $score-6 !important;
+}
+.data.score > select > option:nth-child(6),
+.score-label.score-5 {
+  border-color: $score-5 !important;
+  color: $score-5 !important;
+}
+.data.score > select > option:nth-child(5),
+.score-label.score-4 {
+  border-color: $score-4 !important;
+  color: $score-4 !important;
+}
+.data.score > select > option:nth-child(4),
+.score-label.score-3 {
+  border-color: $score-3 !important;
+  color: $score-3 !important;
+}
+.data.score > select > option:nth-child(3),
+.score-label.score-2 {
+  border-color: $score-2 !important;
+  color: $score-2 !important;
+}
+.data.score > select > option:nth-child(2),
+.score-label.score-1 {
+  border-color: $score-1 !important;
+  color: $score-1 !important;
+}
+
+.status-menu-container {
+  width: 100% !important;
+
+  &.fixed {
+    max-width: $max-width !important;
+    border-bottom: 1px solid $primary !important;
+  }
+
+  .status-menu {
+    border-spacing: initial !important;
+    display: flex !important;
+    align-items: center;
+
+    @include btn-primary(".status-button.on");
+
+    .status-button {
+      flex: 1;
+      padding: 0.5rem 1rem !important;
+      border-radius: 3px !important;
+
+      &:after {
+        display: none;
+      }
+    }
+
+    .search-container {
+      flex: 1;
+      display: flex !important;
+      justify-content: flex-end !important;
+      position: inherit !important;
+
+      #search-box {
+        margin: 0 !important;
+        transition: width 0.1s !important;
+
+        input {
+          outline: none !important;
+          padding: 8px 5px !important;
+          border-radius: 3px !important;
+        }
+
+        &.open {
+          width: 8rem !important;
+
+          ~ #search-button {
+            display: none;
+          }
+        }
+      }
+
+      #search-button {
+        margin: 0 !important;
+      }
+    }
+  }
+}
+
+.list-menu-float {
+  border-radius: 0 5px 5px 0 !important;
+  border: none !important;
+  box-shadow: 1px 1px 2px 2px rgba($black, 0.9) !important;
+
+  .icon-menu {
+    &.profile {
+      border-radius: 0 5px 0 0 !important;
+    }
+
+    span.text {
+      transition: width 0.1s !important;
+    }
+  }
+}
+
+#advanced-options {
+  border: 1px solid $primary !important;
+  border-radius: 5px !important;
+  position: fixed !important;
+  background-color: rgba($dark-gray, 0.9) !important;
+
+  @include btn-primary(".btn-apply");
+
+  .advanced-options-header {
+    color: $primary !important;
+
+    > span {
+      color: $white !important;
+    }
+  }
+
+  > .filter,
+  > .sort {
+    background-color: transparent !important;
+  }
+
+  input[type="radio"] + label {
+    padding: 0.2rem !important;
+    border: 1px solid transparent !important;
+    border-radius: 3px !important;
+    transition: color 0.15s !important;
+  }
+
+  input[type="radio"]:not([disabled]) {
+    + label:hover {
+      color: $primary !important;
+    }
+
+    &:checked + label {
+      color: $primary !important;
+      border-color: $primary !important;
+    }
+  }
+}
+
+a[href] {
+  text-decoration: none !important;
+  transition: color 0.15s !important;
+
+  &:not(.link):not(.icon-add-episode):hover {
+    color: $primary !important;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: inherit;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: $light-gray;
+  border-radius: 100rem;
+  transition: 0.15s;
+
+  &:hover {
+    background: $white;
+  }
+}

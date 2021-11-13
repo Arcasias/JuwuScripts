@@ -1,0 +1,34 @@
+{
+  "username": "Lord Bull Shite",
+  "avatar_url": "https://media.tenor.com/images/071a16662e67612830635763ac56693b/tenor.gif",
+  "content": "It is time for the <@&791713589999829052> !",
+  "tts": true,
+  "embeds": [
+    {
+      "title": "C'EST L'HEURE DU SEUM, MAIS C'EST AUSSI L'HEURE DES 5 MINUTES DE PUR MARTY !!",
+      "url": "https://cdn.discordapp.com/avatars/199964599427137536/42053f496b1cebdf83d0a3ca7ba5c02e.png?size=1024",
+      "description": "Il est 22h, l'heure où tout tourne au désespoir et à l'abandon ... Mais réjouissez-vous, car Martin ne va plus tarder à apparaître pour illuminer votre journée !",
+      "color": 16711808,
+      "image": {
+        "url": "https://cdn.discordapp.com/avatars/199964599427137536/42053f496b1cebdf83d0a3ca7ba5c02e.png?size=1024"
+      },
+      "fields": [
+        {
+          "name": "Pourquoi l'heure du seum ?",
+          "value": "C'est très simple : à partir de 22h il est trop tard pour entreprendre quoi que ce soit de sérieux, mais trop tôt pour se coucher. ça fout le seum, non ?"
+        },
+        {
+          "name": "Et pourquoi se réjouir ?",
+          "value": "Parce que cette heure noire va être égayée par la voix suave et le sourire chaleureux de notre hôte Martin, pour une nouvelle séance des 5 minutes quotidiennes de pur Marty !!"
+        },
+        {
+          "name": "Mais donc c'est trop cool en fait !",
+          "value": "Eh oui ! Prenez vous meilleurs écouteurs et installez-vous confortablement afin de vous laisser bercer par son charisme et sa beauté naturelle !"
+        }
+      ],
+      "footer": {
+        "text": "Il ne devrait plus tarder normalement ..."
+      }
+    }
+  ]
+}

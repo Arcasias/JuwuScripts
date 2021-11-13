@@ -1,0 +1,642 @@
+/*****************************************************************************/
+/* MYANIMELIST: Anime list stylesheet by Arcasias                            */
+/*****************************************************************************/
+
+@use "sass:color";
+
+// FUNCTIONS
+
+/**
+ * Finds the foreground color relative to a given background color.
+ */
+@function invert-color($color) {
+  $r: red($color);
+  $g: green($color);
+  $b: blue($color);
+
+  @if $r * 0.299 + $g * 0.587 + $b * 0.114>186 {
+    @return $black;
+  } @else {
+    @return $white;
+  }
+}
+
+/**
+ * Override default lighten function to use relative lightness increase.
+ */
+@function lighten($color, $lightness) {
+  @return color.scale($color, $lightness: $lightness);
+}
+
+// MIXINS
+
+@mixin border-radius($value: $border-radius) {
+  border-radius: $value !important;
+}
+
+@mixin transition($properties...) {
+  $values: ();
+
+  @if length($properties) >0 {
+    @each $property in $properties {
+      $values: append($values, $property $transition, comma);
+    }
+  } @else {
+    $values: $transition;
+  }
+
+  transition: $values !important;
+}
+
+@mixin btn-primary($selector) {
+  #{$selector} {
+    color: $white !important;
+    background-color: $primary !important;
+    @include transition(color, background-color);
+
+    &:hover {
+      color: $white !important;
+      background-color: lighten($primary, 30%) !important;
+    }
+  }
+}
+
+@mixin btn-border-primary($selector, $border-property: "border") {
+  #{$selector} {
+    color: $primary !important;
+    #{$border-property}: 1px solid $primary !important;
+    @include transition(color, background-color, #{$border-property}-color);
+
+    &:hover {
+      color: lighten($primary, 30%) !important;
+      background-color: $black !important;
+      #{$border-property}-color: lighten($primary, 30%) !important;
+    }
+  }
+}
+
+// VARIABLES
+
+$primary: #ff4080;
+
+$black: #202030;
+$dark-gray: #303040;
+$gray: #8f8f9f;
+$light-gray: #cfcfdf;
+$white: #ebebf5;
+
+$completed: lighten(#26448f, 30%);
+$watching: lighten(#2db039, 20%);
+$onhold: lighten(#f1c83e, 20%);
+$dropped: lighten(#a12f31, 20%);
+$plantowatch: lighten(#c3c3c3, 20%);
+
+$max-width: 1360px;
+$card-padding: 0.5rem;
+
+$img-width: 96px; // Can stretch to 128px
+$img-height: 136px; // Can stretch to 192px
+
+$transition: 0.15s ease-in-out;
+$border-radius: 2px;
+
+// MAPS
+
+$status-colors: (
+  completed: $completed,
+  watching: $watching,
+  reading: $watching,
+  onhold: $onhold,
+  dropped: $dropped,
+  plantowatch: $plantowatch,
+  plantoread: $plantowatch,
+);
+
+$score-colors: (
+  1: #ff0000,
+  2: #ff3f00,
+  3: #ff7f00,
+  4: #ffbf00,
+  5: #ffff00,
+  6: #bfff00,
+  7: #7fff00,
+  8: #3fff00,
+  9: #00ff00,
+  10: #00ffff,
+);
+
+// PROPERTIES
+
+body {
+  background-color: $dark-gray !important;
+  border: none !important;
+  padding: 0 1rem;
+  color: $light-gray !important;
+  fill: $light-gray !important;
+}
+
+* {
+  background-color: inherit !important;
+  border: none !important;
+  color: inherit !important;
+  fill: inherit !important;
+}
+
+input,
+select {
+  background-color: $black !important;
+  border: 1px solid $light-gray !important;
+  @include border-radius;
+}
+
+.header {
+  width: auto !important;
+  max-width: $max-width !important;
+}
+
+.list-container {
+  width: auto !important;
+  max-width: $max-width !important;
+
+  .cover-block {
+    display: flex !important;
+    width: auto !important;
+
+    #cover-image-container {
+      width: 100% !important;
+
+      #cover-image {
+        max-width: none !important;
+        width: 100% !important;
+        object-fit: cover !important;
+      }
+    }
+  }
+}
+
+.list-unit {
+  width: auto !important;
+
+  .list-stats {
+    font-size: 1.5em;
+    padding: 0.25rem 0.5rem;
+    width: auto;
+    background-color: $black !important;
+  }
+
+  > .list-status-title {
+    width: 100% !important;
+
+    > .text {
+      border-width: 0.1rem !important;
+      border-style: solid !important;
+      text-align: left;
+      padding-left: 20px;
+      width: 100% !important;
+      @include border-radius;
+    }
+
+    > .stats {
+      height: auto;
+      line-height: normal;
+      top: 12.5px;
+    }
+  }
+
+  @each $status, $color in $status-colors {
+    &.#{$status} > .list-status-title > .text {
+      color: $color !important;
+      border-color: $color !important;
+    }
+  }
+}
+
+.list-table {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+
+  > tbody:first-child {
+    flex-basis: 100%;
+  }
+
+  .list-table-header {
+    display: flex !important;
+    padding: 0 !important;
+    margin: 0.5rem 0 !important;
+
+    @include btn-border-primary(".header-title", "border-bottom");
+
+    .header-title {
+      flex: 1;
+      background-image: none !important;
+
+      .link.sort {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .sort-icon {
+          position: relative;
+          margin-left: 0.5rem !important;
+
+          &.fa-sort-asc {
+            top: 3px;
+          }
+
+          &.fa-sort-desc {
+            top: -2px;
+          }
+        }
+      }
+
+      &.image,
+      &.status {
+        display: none !important;
+      }
+    }
+  }
+
+  > .list-item {
+    flex: 1;
+    min-width: 196px !important;
+    max-height: 196px !important;
+    background-color: $black !important;
+    margin: 0.4rem !important;
+    padding: $card-padding !important;
+    overflow-y: auto;
+    @include border-radius;
+    @include transition(transform, box-shadow);
+
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0.5rem 0.5rem rgba($black, 0.8);
+    }
+
+    .list-table-data {
+      display: grid !important;
+      grid-template-columns: $img-width auto;
+      grid-template-rows: auto 2rem 2rem auto;
+
+      .data {
+        display: flex !important;
+        align-items: center;
+
+        &.status {
+          display: none !important;
+
+          @each $status, $color in $status-colors {
+            &.#{$status} ~ .data.progress > div {
+              background-color: $color !important;
+              color: invert-color($color) !important;
+            }
+          }
+        }
+
+        &.image {
+          grid-column: 1;
+          grid-row: 2 / span 3;
+          padding: 0 !important;
+          margin: 0;
+
+          img {
+            width: $img-width !important;
+            height: $img-height !important;
+            @include border-radius;
+          }
+        }
+
+        &.title {
+          grid-column: 1 / span 2;
+          color: $white !important;
+          justify-content: space-between;
+          margin-bottom: 0.25rem !important;
+          padding: 0 !important;
+          height: 3rem;
+
+          .link {
+            flex: 8;
+
+            &:hover {
+              color: $primary !important;
+            }
+          }
+
+          .add-edit-more {
+            flex: 1;
+            visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            color: $light-gray !important;
+            margin: 0 !important;
+            align-self: flex-start;
+
+            > span {
+              visibility: visible;
+            }
+
+            .more {
+              margin-top: -1rem;
+            }
+          }
+
+          &::after,
+          .icon-watch {
+            display: none !important;
+          }
+        }
+
+        &.score {
+          grid-row: 4;
+          justify-content: flex-end;
+          align-items: flex-end;
+          margin-left: 0.5rem;
+          @include border-radius(0 0 $border-radius $border-radius);
+
+          .score-label {
+            justify-content: center !important;
+            align-items: center !important;
+            display: flex !important;
+            border-style: solid !important;
+            border-width: 3px !important;
+            width: 2rem !important;
+            height: 2rem !important;
+            font-size: 12pt;
+            background-color: $black !important;
+            box-shadow: 0 0 0.5rem rgba($black, 0.5);
+            @include border-radius(100rem);
+
+            &.score-10 {
+              overflow: hidden !important;
+              justify-content: start !important;
+
+              &::before {
+                content: "\2605" !important;
+                font-size: 1.5em;
+                margin-top: -3px;
+                padding-right: 100px;
+                padding-left: 0.36rem;
+              }
+            }
+          }
+
+          > select {
+            margin-left: 0.5rem;
+          }
+        }
+
+        &.type {
+          grid-row: 3;
+          margin-left: 0.5rem;
+          color: $gray !important;
+          padding: 0.2rem 0.3rem !important;
+          @include border-radius($border-radius $border-radius 0 0);
+        }
+
+        &.progress {
+          grid-row: 2;
+
+          .link {
+            font-weight: bold;
+          }
+
+          > div {
+            padding: 0.2rem 0.3rem !important;
+            margin-left: 0.5rem;
+            width: 100%;
+            @include border-radius;
+
+            input[type="text"] {
+              color: $white !important;
+            }
+          }
+        }
+      }
+
+      .tags textarea {
+        outline: none !important;
+        padding: 8px 5px !important;
+      }
+    }
+
+    .more-info {
+      margin-top: 1rem;
+
+      .more-content {
+        background-color: $black !important;
+        @include border-radius;
+      }
+    }
+  }
+}
+
+@each $num, $color in $score-colors {
+  .data.score > select > option:nth-child(#{$num + 1}),
+  .score-label.score-#{$num} {
+    border-color: $color !important;
+    color: $color !important;
+  }
+}
+
+.status-menu-container {
+  width: 100% !important;
+
+  &.fixed {
+    max-width: $max-width !important;
+    border-bottom: 1px solid $primary !important;
+  }
+
+  .status-menu {
+    border-spacing: initial !important;
+    display: flex !important;
+    align-items: center;
+
+    @include btn-primary(".status-button.on");
+
+    .status-button {
+      flex: 1;
+      padding: 0.5rem 1rem !important;
+      @include border-radius;
+
+      &:after {
+        display: none;
+      }
+    }
+
+    .search-container {
+      flex: 1;
+      display: flex !important;
+      justify-content: flex-end !important;
+      position: inherit !important;
+
+      #search-box {
+        margin: 0 !important;
+        @include transition(width);
+
+        input {
+          outline: none !important;
+          padding: 8px 5px !important;
+          @include border-radius;
+        }
+
+        &.open {
+          width: 8rem !important;
+
+          ~ #search-button {
+            display: none;
+          }
+        }
+      }
+
+      #search-button {
+        margin: 0 !important;
+      }
+    }
+  }
+}
+
+.list-menu-float {
+  border: none !important;
+  width: auto !important;
+  overflow: hidden;
+  margin-left: -0.5rem;
+  box-shadow: 1px 1px 2px 2px rgba($black, 0.9) !important;
+  @include border-radius(100rem);
+
+  .icon-menu {
+    transition: none !important;
+
+    &:not(.profile) {
+      display: none !important;
+      width: auto !important;
+      height: auto !important;
+      padding: 0.5rem;
+    }
+
+    .icon,
+    .text,
+    .link-list-setting,
+    .link-style-setting {
+      position: inherit !important;
+      width: auto !important;
+      height: auto !important;
+      line-height: inherit !important;
+      opacity: 1 !important;
+      color: inherit !important;
+      top: 0 !important;
+      left: 0 !important;
+      @include transition(color, fill);
+    }
+
+    .icon {
+      height: fit-content !important;
+    }
+
+    .text {
+      flex: 1;
+      margin-left: 0.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .link-list-setting,
+    .link-style-setting {
+      @include transition(color, fill);
+    }
+
+    .link-list-setting {
+      margin-bottom: 1rem;
+    }
+
+    &:not(.setting):hover {
+      color: $primary !important;
+      fill: $primary !important;
+    }
+  }
+
+  &:hover {
+    @include border-radius(0 $border-radius $border-radius 0);
+
+    .icon-menu {
+      &.profile {
+        margin-bottom: 1rem;
+      }
+      &:not(.profile) {
+        display: flex !important;
+      }
+    }
+  }
+}
+
+#advanced-options {
+  border: 1px solid $primary !important;
+  position: fixed !important;
+  background-color: rgba($dark-gray, 0.9) !important;
+  @include border-radius;
+  @include btn-primary(".btn-apply");
+
+  .advanced-options-header {
+    color: $primary !important;
+
+    > span {
+      color: $white !important;
+    }
+  }
+
+  > .filter,
+  > .sort {
+    background-color: transparent !important;
+  }
+
+  input[type="radio"] + label {
+    padding: 0.2rem !important;
+    border: 1px solid transparent !important;
+    @include border-radius;
+    @include transition(color);
+  }
+
+  input[type="radio"]:not([disabled]) {
+    + label:hover {
+      color: $primary !important;
+    }
+
+    &:checked + label {
+      color: $primary !important;
+      border-color: $primary !important;
+    }
+  }
+}
+
+a[href] {
+  text-decoration: none !important;
+  transition: color 0.15s !important;
+
+  &:not(.link):not(.icon-add-episode):hover {
+    color: $primary !important;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: inherit;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: $light-gray;
+  @include transition;
+  @include border-radius(100rem);
+
+  &:hover {
+    background: $white;
+  }
+}
