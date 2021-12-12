@@ -8,5 +8,5 @@
 const spongebobify = (text) =>
   text
     .split("")
-    .map((c, i) => (Math.random() > 0.5 ? c.toLowerCase() : c.toUpperCase()))
+    .map((c) => (Math.random() > 0.5 ? c.toLowerCase() : c.toUpperCase()))
     .join("");

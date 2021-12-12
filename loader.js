@@ -70,8 +70,17 @@ const buildScript = async ([fileName, ext, title, directives, content]) => {
     info.push(`- Use: ${directives.use}`);
   }
   if (directives.result) {
+    const fns = directives.result.split(/[&,]/).map((x) => `\`${x.trim()}\``);
+    const sing = fns.length === 1;
     info.push(
-      `- This script defines the function \`${directives.result}\`. You must call it to see the effects.`
+      `- This script defines the function${sing ? "" : "s"} ${[
+        fns.slice(0, -1).join(", "),
+        fns[fns.length - 1],
+      ]
+        .filter(filterEmpty)
+        .join(" and ")}. You must call ${
+        sing ? "it" : "them"
+      } to see the effects.`
     );
   }
   const tmpFile = join(SRC_FOLDER, `temp_${fileName}`);

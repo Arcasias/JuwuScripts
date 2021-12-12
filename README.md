@@ -74,6 +74,26 @@ Scan the `window` object for any additionnal global key.
 </details>
 <br>
 
+## [Hexadecimal to RGB and vice-versa](https://github.com/Arcasias/scripts/blob/master/src/public/color_operations.js)
+
+Convert RGB arrays to hexadecimal colors and vice-versa.
+
+<details>
+  <summary>
+    Click to see more
+  </summary>
+
+<br>
+
+- This script defines the functions `hexToRgb` and `rgbToHex`. You must call them to see the effects.
+
+```js
+const hexToRgb=a=>String(a).match(/#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})/)?.slice(1,4).map((a=>parseInt(a,16))),rgbToHex=a=>"#"+a.map((a=>Math.floor(a).toString(16).padStart(2,"0"))).join("");
+```
+
+</details>
+<br>
+
 ## [Netflix & Do nothing](https://github.com/Arcasias/scripts/blob/master/src/public/lazy_netflix.js)
 
 Automatically click on the `Skip Intro` and `Next Episode` buttons as soon as they appear.
@@ -130,7 +150,7 @@ Time to sPonGeBobIfY your texts!
 - This script defines the function `spongebobify`. You must call it to see the effects.
 
 ```js
-const spongebobify=o=>o.split("").map(((o,a)=>Math.random()>.5?o.toLowerCase():o.toUpperCase())).join("");
+const spongebobify=o=>o.split("").map((o=>Math.random()>.5?o.toLowerCase():o.toUpperCase())).join("");
 ```
 
 </details>
