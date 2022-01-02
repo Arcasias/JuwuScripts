@@ -115,6 +115,27 @@ new MutationObserver((()=>[...document.querySelectorAll(".watch-video--skip-cont
 </details>
 <br>
 
+## [Remove YouTube suggestion cards](https://github.com/Arcasias/scripts/blob/master/src/public/youtube_cards.js)
+
+Removes the suggestion cards at the end of a video.
+
+<details>
+  <summary>
+    Click to see more
+  </summary>
+
+<br>
+
+- Works on: https://www.youtube.com/
+- Use: at the end of a video when the cards appear.
+
+```js
+[...document.getElementsByClassName("ytp-ce-element")].map((e=>e.remove()));
+```
+
+</details>
+<br>
+
 ## [Shana Project 1080p](https://github.com/Arcasias/scripts/blob/master/src/public/shana.js)
 
 Filter the search results to only have 1080p links.
