@@ -136,6 +136,26 @@ Removes the suggestion cards at the end of a video.
 </details>
 <br>
 
+## [Run away](https://github.com/Arcasias/scripts/blob/master/src/public/runaway.js)
+
+Makes the interactive elements go crazy!
+
+<details>
+  <summary>
+    Click to see more
+  </summary>
+
+<br>
+
+
+
+```js
+(()=>{let t=!1;window.addEventListener("mousemove",(async e=>{t||(t=!0,(({clientX:t,clientY:e})=>{for(const n of document.querySelectorAll('a[href],button,input,select,[tabindex]:not([tabindex="-1"]')){const{x:i,y:o,height:s,width:a}=n.getBoundingClientRect();if(!a||!s)continue;const c=i+a/2-t,d=o+s/2-e;Math.sqrt(c**2+d**2)<Math.max(100,a+20,s+20)&&Object.assign(n.style,{position:"fixed",width:`${a}px`,height:`${s}px`,left:`${i+c}px`,top:`${o+d}px`})}})(e),await new Promise(requestAnimationFrame),t=!1)}),!0)})();
+```
+
+</details>
+<br>
+
 ## [Shana Project 1080p](https://github.com/Arcasias/scripts/blob/master/src/public/shana.js)
 
 Filter the search results to only have 1080p links.
