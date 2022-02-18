@@ -94,6 +94,26 @@ const hexToRgb=a=>String(a).match(/#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})/)?.sli
 </details>
 <br>
 
+## [Mouse position](https://github.com/Arcasias/scripts/blob/master/src/public/mouse.js)
+
+Displays the mouse position in real time in the dev tools
+
+<details>
+  <summary>
+    Click to see more
+  </summary>
+
+<br>
+
+- Use: in a new Google Chrome "Live Expression" block
+
+```js
+onmousemove?mouse:(window.mouse=[])&&(window.onmousemove=o=>window.mouse=[o.clientX,o.clientY]);
+```
+
+</details>
+<br>
+
 ## [Netflix & Do nothing](https://github.com/Arcasias/scripts/blob/master/src/public/lazy_netflix.js)
 
 Automatically click on the `Skip Intro` and `Next Episode` buttons as soon as they appear.
