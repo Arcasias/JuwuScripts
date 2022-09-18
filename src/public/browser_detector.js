@@ -1,7 +1,7 @@
 /**
  * Browser detector
  *
- * @description Detect which browser you are in.
+ * @description Detect which browser you are on.
  * @result getBrowser
  */
 

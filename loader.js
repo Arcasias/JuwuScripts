@@ -21,7 +21,8 @@ const cleanLine = (line) => line.replaceAll(/[\r\n]+/g, "");
 
 const readScript = async (fileName) => {
   const scriptContent = await readFile(join(SRC_FOLDER, fileName), "utf8");
-  const [ext] = fileName.split(".").slice(-1);
+  const fileNameParts = fileName.split(".");
+  const ext = fileNameParts.pop();
   const title = [];
   const directives = {};
   const lines = scriptContent.split("\n");
@@ -52,16 +53,30 @@ const readScript = async (fileName) => {
     }
   }
 
-  return [
+  return {
+    id: fileNameParts.join(".").replace(/_/, "-"),
     fileName,
     ext,
-    title.filter(filterEmpty).join(" "),
+    title: title.filter(filterEmpty).join(" "),
     directives,
-    lines.slice(startingLine).filter(filterEmpty).map(cleanLine).join("\n"),
-  ];
+    content: lines
+      .slice(startingLine)
+      .filter(filterEmpty)
+      .map(cleanLine)
+      .join("\n"),
+  };
 };
 
-const buildScript = async ([fileName, ext, title, directives, content]) => {
+const buildIndex = ({ id, title }) => `- [${title}](#${id})`;
+
+const buildScript = async ({
+  id,
+  fileName,
+  ext,
+  title,
+  directives,
+  content,
+}) => {
   const info = [];
   if (directives.website) {
     info.push(`- Works on: ${directives.website}`);
@@ -78,9 +93,9 @@ const buildScript = async ([fileName, ext, title, directives, content]) => {
         fns[fns.length - 1],
       ]
         .filter(filterEmpty)
-        .join(" and ")}. You must call ${
-        sing ? "it" : "them"
-      } to see the effects.`
+        .join(" and ")}. You have to call ${sing ? "it" : "them"} to see ${
+        sing ? "its" : "their"
+      } effects.`
     );
   }
   const tmpFile = join(SRC_FOLDER, `temp_${fileName}`);
@@ -95,17 +110,12 @@ const buildScript = async ([fileName, ext, title, directives, content]) => {
     await unlink(tmpFile);
   }
 
+  const gitHubLink = [GITHUB_URL, SRC_FOLDER, fileName].join("/");
+
   return `
-## [${title}](${[GITHUB_URL, SRC_FOLDER, fileName].join("/")})
+## <a name="${id}">[${title}](${gitHubLink})</a>
 
 ${directives.description || ""}
-
-<details>
-  <summary>
-    Click to see more
-  </summary>
-
-<br>
 
 ${info.join("\n")}
 
@@ -113,7 +123,7 @@ ${info.join("\n")}
 ${minContent}
 \`\`\`
 
-</details>`;
+`;
 };
 
 const getScripts = async () => {
@@ -121,19 +131,23 @@ const getScripts = async () => {
   const filteredNames = scriptFileNames.filter(isSupported);
   const scriptInfo = await Promise.all(filteredNames.map(readScript));
   const sortedInfo = scriptInfo.sort((a, b) =>
-    a[2] > b[2] ? 1 : a[2] < b[2] ? -1 : 0
+    a.title > b.title ? 1 : a.title < b.title ? -1 : 0
   );
+  const indices = sortedInfo.map(buildIndex);
   const scriptsDescr = await Promise.all(sortedInfo.map(buildScript));
-  return scriptsDescr.join("\n<br>\n");
+  return { indices, scripts: scriptsDescr };
 };
 
 // Main
 (async () => {
   const startTime = Date.now();
-  const [header, content] = await Promise.all([
+  const [template, { indices, scripts }] = await Promise.all([
     readFile(TEMPLATE_PATH, "utf8"),
     getScripts(),
   ]);
-  await writeFile(RESULT_PATH, header + content);
+  const fileContent = template
+    .replace(/%index%/, indices.join("\n"))
+    .replace(/%scripts%/, scripts.join("\n<br>\n"));
+  await writeFile(RESULT_PATH, fileContent);
   console.log(`${RESULT_PATH} loaded in`, Date.now() - startTime, "ms");
 })();
