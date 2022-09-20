@@ -1,0 +1,10 @@
+{
+  "name": "Scripts",
+  "description": "Bunch of useful and quirky Scripts",
+  "version": "0.1",
+  "manifest_version": 3,
+  "permissions": ["activeTab", "scripting"],
+  "action": {
+    "default_popup": "./extension/popup/index.html"
+  }
+}

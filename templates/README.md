@@ -6,7 +6,7 @@ This repository is a list of small scripts/projects that I like to use accross t
 
 ## Index
 
-%index%
+<!-- index -->
 
 ## How to use
 
@@ -18,4 +18,4 @@ You will first need to open the console (<code style="color:#a8f">F12</code>). T
 
 3. The script defines something else, which should be specified by the script description.
 
-%scripts%
+<!-- scripts -->

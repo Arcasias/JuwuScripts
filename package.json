@@ -2,9 +2,11 @@
   "name": "scripts",
   "version": "1.0.0",
   "description": "Here is a list of QoL scripts that I use to run accross the web. Feel free to use them.",
-  "main": "./loader.ts",
+  "main": "./src/loader.ts",
   "scripts": {
-    "build": "prettier --write \"./src/**/*.{js,ts}\" && ts-node ./loader.ts"
+    "build:prettier": "prettier --write \"./src/**/*.{js,ts}\"",
+    "build:loader": "ts-node ./src/loader.ts",
+    "build": "npm run build:prettier && npm run build:loader"
   },
   "repository": {
     "type": "git",

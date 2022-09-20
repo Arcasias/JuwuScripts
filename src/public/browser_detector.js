@@ -5,7 +5,7 @@
  * @result getBrowser
  */
 
-const getBrowser = () => {
+window.getBrowser = () => {
   if (
     window.opera ||
     (window.opr && opr.addons) ||

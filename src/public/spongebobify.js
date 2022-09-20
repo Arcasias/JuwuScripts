@@ -5,7 +5,7 @@
  * @result spongebobify
  */
 
-const spongebobify = (text) =>
+window.spongebobify = (text) =>
   text
     .split("")
     .map((c) => (Math.random() > 0.5 ? c.toLowerCase() : c.toUpperCase()))

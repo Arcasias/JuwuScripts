@@ -36,7 +36,7 @@ Detect which browser you are on.
 - This script defines the function `getBrowser`. You have to call it to see its effects.
 
 ```js
-const getBrowser=()=>window.opera||window.opr&&opr.addons||/OPR/.test(navigator.userAgent)?"Opera":window.InstallTrigger?"Firefox":window.safari&&/SafariRemoteNotification/.test(safari.pushNotification)?"Safari":window.chrome&&(chrome.webstore||chrome.runtime)?/Edg/.test(navigator.userAgent)?"Edge":"Chrome":void 0;
+window.getBrowser=()=>window.opera||window.opr&&opr.addons||/OPR/.test(navigator.userAgent)?"Opera":window.InstallTrigger?"Firefox":window.safari&&/SafariRemoteNotification/.test(safari.pushNotification)?"Safari":window.chrome&&(chrome.webstore||chrome.runtime)?/Edg/.test(navigator.userAgent)?"Edge":"Chrome":void 0;
 ```
 
 
@@ -75,7 +75,7 @@ Convert RGB arrays to hexadecimal colors and vice-versa.
 - This script defines the functions `hexToRgb` and `rgbToHex`. You have to call them to see their effects.
 
 ```js
-const hexToRgb=a=>String(a).match(/#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})/)?.slice(1,4).map(a=>parseInt(a,16)),rgbToHex=a=>"#"+a.map(a=>Math.floor(a).toString(16).padStart(2,"0")).join("");
+window.hexToRgb=a=>String(a).match(/#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})/)?.slice(1,4).map(a=>parseInt(a,16)),window.rgbToHex=a=>"#"+a.map(a=>Math.floor(a).toString(16).padStart(2,"0")).join("");
 ```
 
 
@@ -156,7 +156,7 @@ Time to sPonGeBobIfY your texts!
 - This script defines the function `spongebobify`. You have to call it to see its effects.
 
 ```js
-const spongebobify=o=>o.split("").map(o=>.5<Math.random()?o.toLowerCase():o.toUpperCase()).join("");
+window.spongebobify=o=>o.split("").map(o=>.5<Math.random()?o.toLowerCase():o.toUpperCase()).join("");
 ```
 
 
