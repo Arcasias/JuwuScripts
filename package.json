@@ -2,15 +2,14 @@
   "name": "scripts",
   "version": "1.0.0",
   "description": "Here is a list of QoL scripts that I use to run accross the web. Feel free to use them.",
-  "main": "loader.js",
+  "main": "./loader.ts",
   "scripts": {
-    "build": "prettier --write \"./src/**/*.{js,ts}\" && node loader.js"
+    "build": "prettier --write \"./src/**/*.{js,ts}\" && ts-node ./loader.ts"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Arcasias/scripts.git"
   },
-  "type": "module",
   "keywords": [],
   "author": {
     "name": "Julien Mougenot"
@@ -21,7 +20,9 @@
   },
   "homepage": "https://github.com/Arcasias/scripts#readme",
   "devDependencies": {
-    "minify": "^8.0.3",
-    "prettier": "^2.4.1"
+    "@types/uglify-js": "^3.17.0",
+    "prettier": "^2.4.1",
+    "ts-node": "^10.9.1",
+    "uglify-js": "^3.17.1"
   }
 }

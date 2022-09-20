@@ -12,4 +12,4 @@ new MutationObserver(() =>
       ".watch-video--skip-content-button,[data-uia=next-episode-seamless-button]"
     ),
   ].map((e) => e.click())
-).observe(document.body, { childList: !0, subtree: !0 });
+).observe(document.body, { childList: true, subtree: true });

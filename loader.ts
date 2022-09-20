@@ -1,6 +1,17 @@
-import { readdir, readFile, unlink, writeFile } from "fs/promises";
-import { minify } from "minify";
+import { readdir, readFile, writeFile } from "fs/promises";
 import { join } from "path";
+import { minify } from "uglify-js";
+
+type Directive = "description" | "result" | "use" | "website";
+
+interface ScriptInfo {
+  id: string;
+  fileName: string;
+  ext: string;
+  title: string;
+  directives: Record<Directive, string>;
+  content: string;
+}
 
 const SRC_FOLDER = "src/public";
 const TEMPLATE_PATH = "readme_template.md";
@@ -15,25 +26,26 @@ const COMMENT_LINE = /^\s*\*/;
 const COMMENT_END = /\*\//;
 const DIRECTIVE = /@(\w+)\s+(.*)/;
 
-const isSupported = (fileName) => /.(js|ts|html|s?css)$/.test(fileName);
-const filterEmpty = (line) => line.length && !/^[\s\r\n]+$/.test(line);
-const cleanLine = (line) => line.replaceAll(/[\r\n]+/g, "");
+const isSupported = (fileName: string) => /.(js|ts|html|s?css)$/.test(fileName);
+const filterEmpty = (line?: string) =>
+  line?.length && !/^[\s\r\n]+$/.test(line);
+const cleanLine = (line: string) => line.replaceAll(/[\r\n]+/g, "");
 
-const readScript = async (fileName) => {
+const readScript = async (fileName: string) => {
   const scriptContent = await readFile(join(SRC_FOLDER, fileName), "utf8");
-  const fileNameParts = fileName.split(".");
-  const ext = fileNameParts.pop();
-  const title = [];
-  const directives = {};
   const lines = scriptContent.split("\n");
+  const fileNameParts = fileName.split(".");
+  const ext = fileNameParts.pop()!;
+  const title: string[] = [];
+  const directives: Record<string, string> = {};
 
-  let startingLine = 0;
+  let startingLine: number = 0;
 
   // Script
   if (SCRIPT_EXTS.includes(ext)) {
     let started = false;
     for (startingLine = 0; startingLine < lines.length; startingLine++) {
-      const line = lines[startingLine];
+      const line = lines[startingLine]!;
       if (started) {
         if (COMMENT_END.test(line)) {
           startingLine++;
@@ -43,7 +55,7 @@ const readScript = async (fileName) => {
         const directiveMatch = trimmed.match(DIRECTIVE);
         if (directiveMatch) {
           const [, name, content] = directiveMatch;
-          directives[name.trim()] = content.trim();
+          directives[name!.trim()] = content!.trim();
         } else {
           title.push(trimmed);
         }
@@ -67,7 +79,7 @@ const readScript = async (fileName) => {
   };
 };
 
-const buildIndex = ({ id, title }) => `- [${title}](#${id})`;
+const buildIndex = ({ id, title }: ScriptInfo) => `- [${title}](#${id})`;
 
 const buildScript = async ({
   id,
@@ -76,7 +88,7 @@ const buildScript = async ({
   title,
   directives,
   content,
-}) => {
+}: ScriptInfo) => {
   const info = [];
   if (directives.website) {
     info.push(`- Works on: ${directives.website}`);
@@ -98,17 +110,16 @@ const buildScript = async ({
       } effects.`
     );
   }
-  const tmpFile = join(SRC_FOLDER, `temp_${fileName}`);
-  let minContent;
-  try {
-    await writeFile(tmpFile, content);
-    minContent = await minify(tmpFile);
-  } catch (err) {
-    console.error(`Script skipped: ${fileName}\n`, err);
+
+  console.log("Minifying file:", fileName);
+  const result = minify(content, { warnings: "verbose" });
+  if (result.error) {
+    console.error(`> ERROR (skipping script): ->`, result.error);
     return "";
-  } finally {
-    await unlink(tmpFile);
+  } else if (result.warnings) {
+    console.warn(result.warnings.map((w) => `> ${w}`).join("\n"));
   }
+  console.log("> SUCCESS\n");
 
   const gitHubLink = [GITHUB_URL, SRC_FOLDER, fileName].join("/");
 
@@ -120,7 +131,7 @@ ${directives.description || ""}
 ${info.join("\n")}
 
 \`\`\`${ext}
-${minContent}
+${result.code}
 \`\`\`
 
 `;
@@ -149,5 +160,5 @@ const getScripts = async () => {
     .replace(/%index%/, indices.join("\n"))
     .replace(/%scripts%/, scripts.join("\n<br>\n"));
   await writeFile(RESULT_PATH, fileContent);
-  console.log(`${RESULT_PATH} loaded in`, Date.now() - startTime, "ms");
+  console.log(`${RESULT_PATH} built in`, Date.now() - startTime, "ms");
 })();
