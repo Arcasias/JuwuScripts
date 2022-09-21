@@ -2,14 +2,21 @@ import { readdir, readFile } from "fs/promises";
 import { join } from "path";
 import { minify } from "uglify-js";
 
-type Directive = "description" | "result" | "use" | "website";
+interface Directives {
+  description?: string;
+  result?: string[];
+  use?: string;
+  website?: string;
+}
+
+type Directive = keyof Directives;
 
 export interface ScriptInfo {
   id: string;
   fileName: string;
   ext: string;
   title: string;
-  directives: Record<Directive, string>;
+  directives: Directives;
   content: string;
 }
 
@@ -37,7 +44,7 @@ const readScript = async (fileName: string) => {
   const fileNameParts = fileName.split(".");
   const ext = fileNameParts.pop()!;
   const title: string[] = [];
-  const directives: Record<string, string> = {};
+  const directives: Directives = {};
 
   let startingLine: number = 0;
 
@@ -55,7 +62,15 @@ const readScript = async (fileName: string) => {
         const directiveMatch = trimmed.match(DIRECTIVE);
         if (directiveMatch) {
           const [, name, content] = directiveMatch;
-          directives[name!.trim()] = content!.trim();
+          const directive = name.trim() as Directive;
+          const trimmed = content.trim();
+          if (directive === "result") {
+            directives[directive] = trimmed
+              .split(/[&,]/)
+              .map((x: string) => x.trim());
+          } else {
+            directives[directive] = trimmed;
+          }
         } else {
           title.push(trimmed);
         }
@@ -85,20 +100,23 @@ const readScript = async (fileName: string) => {
     fileName,
     ext,
     title: title.filter(filterEmpty).join(" "),
-    directives,
+    directives: directives as Record<Directive, any>,
     content: result.code,
   };
 };
 
-const serializeObject = (obj: Record<any, any>): string => {
-  const serialized = Object.entries(obj).map(([key, value]) => {
-    const serializedValue =
-      typeof value === "object" && value
-        ? serializeObject(value)
-        : `\`${String(value).replace(/(`|\$)/g, "\\$1")}\``;
-    return `"${key}":${serializedValue}`;
-  });
-  return `{${serialized.join(",")}}`;
+const serialize = (value: any): string => {
+  if (Array.isArray(value)) {
+    return `[${value.map(serialize).join(",")}]`;
+  } else if (value && typeof value === "object") {
+    return `{${Object.entries(value)
+      .map(([k, v]) => `"${k}":${serialize(v)}`)
+      .join(",")}}`;
+  } else if (typeof value === "string") {
+    return `\`${value.replace(/(`|\$|\\)/g, "\\$1")}\``;
+  } else {
+    return String(value);
+  }
 };
 
 export const getScriptInfos = async () => {
@@ -111,7 +129,7 @@ export const getScriptInfos = async () => {
 };
 
 // Script builders
-export const buildJsScript = (info: ScriptInfo) => serializeObject(info);
+export const buildJsScript = (info: ScriptInfo) => serialize(info);
 
 export const buildMdScript = ({
   id,
@@ -129,12 +147,12 @@ export const buildMdScript = ({
     additionalInfos.push(`- Use: ${directives.use}`);
   }
   if (directives.result) {
-    const fns = directives.result.split(/[&,]/).map((x) => `\`${x.trim()}\``);
-    const sing = fns.length === 1;
+    const result = directives.result.map(serialize);
+    const sing = result.length === 1;
     additionalInfos.push(
       `- This script defines the function${sing ? "" : "s"} ${[
-        fns.slice(0, -1).join(", "),
-        fns[fns.length - 1],
+        result.slice(0, -1).join(", "),
+        result.at(-1),
       ]
         .filter(filterEmpty)
         .join(" and ")}. You have to call ${sing ? "it" : "them"} to see ${

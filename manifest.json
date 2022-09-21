@@ -3,8 +3,8 @@
   "description": "Bunch of useful and quirky Scripts",
   "version": "0.1",
   "manifest_version": 3,
-  "permissions": ["activeTab", "scripting"],
+  "permissions": ["activeTab", "scripting", "storage"],
   "action": {
-    "default_popup": "./extension/popup/index.html"
+    "default_popup": "./extension/build/index.html"
   }
 }

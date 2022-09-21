@@ -1,0 +1,29 @@
+
+
+.script {
+  cursor: pointer;
+  transition: border 0.15s;
+
+  .script-title {
+    transition: color 0.15s;
+  }
+
+  .script-details {
+    display: none;
+  }
+
+  &.hovered {
+    border-color: var(--bs-primary);
+
+    .script-title {
+      color: var(--bs-primary);
+    }
+  }
+
+  &:first-child:last-child,
+  &.hovered {
+    .script-details {
+      display: block;
+    }
+  }
+}

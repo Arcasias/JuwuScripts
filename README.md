@@ -6,7 +6,6 @@ This repository is a list of small scripts/projects that I like to use accross t
 
 ## Index
 
-- [Browser detector](#browser-detector)
 - [Cross-reload timer](#timer)
 - [Global scanner](#glob-scanner)
 - [Hexadecimal to RGB and vice-versa](#color-operations)
@@ -28,19 +27,6 @@ You will first need to open the console (<code style="color:#a8f">F12</code>). T
 
 3. The script defines something else, which should be specified by the script description.
 
-
-## <a name="browser-detector">[Browser detector](https://github.com/Arcasias/scripts/blob/master/src/public/browser_detector.js)</a>
-
-Detect which browser you are on.
-
-- This script defines the function `getBrowser`. You have to call it to see its effects.
-
-```js
-window.getBrowser=()=>window.opera||window.opr&&opr.addons||/OPR/.test(navigator.userAgent)?"Opera":window.InstallTrigger?"Firefox":window.safari&&/SafariRemoteNotification/.test(safari.pushNotification)?"Safari":window.chrome&&(chrome.webstore||chrome.runtime)?/Edg/.test(navigator.userAgent)?"Edge":"Chrome":void 0;
-```
-
-
-<br>
 
 ## <a name="timer">[Cross-reload timer](https://github.com/Arcasias/scripts/blob/master/src/public/timer.js)</a>
 

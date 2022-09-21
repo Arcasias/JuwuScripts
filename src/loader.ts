@@ -13,7 +13,7 @@ const README_TEMPLATE_PATH = "./templates/README.md";
 const README_PATH = "./README.md";
 
 const POPUP_JS_TEMPLATE_PATH = "./templates/scripts.js";
-const POPUP_JS_PATH = "./extension/popup/scripts.js";
+const POPUP_JS_PATH = "./extension/src/scripts.js";
 
 const buildREADME = async (scriptInfos: ScriptInfo[]) => {
   const template = await readFile(README_TEMPLATE_PATH, "utf8");
