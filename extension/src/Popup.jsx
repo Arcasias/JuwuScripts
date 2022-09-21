@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useState } from "react";
 import "./Popup.scss";
 import { Script } from "./Script";
@@ -20,6 +21,13 @@ export const Popup = () => {
 
   const [query, setQueryOnly] = useState(defaultQuery);
 
+  // Disgusting hack to make the root take its actual width
+  const ref = useRef(null);
+  useEffect(() => {
+    ref.current.setAttribute("style", "width:0px");
+    setTimeout(() => ref.current.removeAttribute("style"));
+  }, []);
+
   const scripts = query
     ? SCRIPTS.filter((s) =>
         SEACH_KEYS.some((getKey) => normalize(getKey(s)).includes(query))
@@ -39,7 +47,10 @@ export const Popup = () => {
   };
 
   return (
-    <main className="Popup container-lg d-flex flex-column m-0 bg-dark text-light">
+    <main
+      ref={ref}
+      className="Popup container-lg d-flex flex-column m-0 bg-dark text-light"
+    >
       <div className="input-group my-3">
         <input
           className="form-control bg-dark text-light"

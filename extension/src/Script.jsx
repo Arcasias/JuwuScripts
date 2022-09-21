@@ -2,9 +2,9 @@
 import { useEffect, useState } from "react";
 import "./Script.scss";
 
-const getWebsiteHostname = (website) => {
+const getWebsiteHostname = (url) => {
   const a = document.createElement("a");
-  a.href = website;
+  a.href = url;
   return a.hostname;
 };
 
@@ -37,24 +37,24 @@ export const Script = ({
   hovered,
   onHover,
 }) => {
-  const storageId = `autorun_${id}`;
   const [status, setStatus] = useState(null);
   let locked = false;
 
   const [autoRunning, setAutorunning] = useState(false);
+  const hostName = (website && getWebsiteHostname(website)) || false;
 
   useEffect(() => {
     const fetchAutorunning = async () => {
       try {
-        const value = await chrome.storage.sync.get(storageId);
-        setAutorunning(value[storageId]);
+        const value = await chrome.storage.sync.get(id);
+        setAutorunning(Boolean(value[id]));
       } catch (err) {
         console.debug(err);
         setAutorunning(false);
       }
     };
     fetchAutorunning();
-  }, [storageId]);
+  }, [id]);
 
   const setAutorun = async (activate) => {
     if (locked) {
@@ -63,7 +63,11 @@ export const Script = ({
     const previous = autoRunning;
     setAutorunning(activate);
     try {
-      await chrome.storage.sync.set({ [storageId]: activate });
+      if (activate) {
+        await chrome.storage.sync.set({ [id]: { id, hostName, fileName } });
+      } else {
+        await chrome.storage.sync.remove(id);
+      }
     } catch (err) {
       setAutorunning(previous);
       console.debug(err);
@@ -143,7 +147,7 @@ export const Script = ({
                 rel="noreferrer"
                 className="card-link"
               >
-                {getWebsiteHostname(website)}
+                {hostName}
               </a>
             </li>
           )}
