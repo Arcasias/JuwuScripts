@@ -13,6 +13,7 @@ You can [build and use](#chrome-extension) the integrated Chrome extension to ha
 - [Hexadecimal to RGB and vice-versa](#color-operations)
 - [Mouse position](#mouse)
 - [Netflix & Do nothing](#lazy-netflix)
+- [Odoo buddy](#odoo-buddy)
 - [Remove YouTube suggestion cards](#youtube-cards)
 - [Run away](#runaway)
 - [Shana Project 1080p](#shana)
@@ -89,6 +90,41 @@ Automatically click on the `Skip Intro` and `Next Episode` buttons as soon as th
 
 ```js
 new MutationObserver(()=>[...document.querySelectorAll(".watch-video--skip-content-button,[data-uia=next-episode-seamless-button]")].map(e=>e.click())).observe(document.body,{childList:!0,subtree:!0});
+```
+
+
+<br>
+
+## <a name="odoo-buddy">[Odoo buddy](https://github.com/Arcasias/scripts/blob/master/src/public/odoo_buddy.js)</a>
+
+Adds options to the Odoo backend login screen to login as admin, user or portal in a single click.
+
+
+
+```js
+(({odoo:e,owl:o})=>{if(!e)return;var n=[...document.head.querySelectorAll("script")].some(e=>/frontend/.test(e.src)),o=o?o.__info__.version:"not running on Owl";let t;const r="color:#017e84;font-weight:bold;font-family:Roboto;font-size:1.2rem;margin-bottom:0.2rem;",s="color:inherit;font-weight:inherit;font-size:inherit;margin:0;",i="color:#ff0080;";var c=[`%cRunning in Odoo environment (${n?"frontend":"backend"})%c`,`• Database: %c${(t="@web/session"in e.__DEBUG__.services?e.__DEBUG__.services["@web/session"].session:e.__DEBUG__.services["web.session"]).db}%c`,`• User ID: %c${t.uid}%c`,`• Server version: %c${t.server_version}%c`,`• Owl version: %c${o}%c`],a=(e.debug&&c.push(`• Debug: %c${e.debug}%c`),[c.join("\n"),r,s]);for(let e=1;e<c.length;e++)a.push(i,s);if(console.debug(...a),"/web/login"!==window.location.pathname)return;const l="odoo-buddy-user",d="data-ob-key";n=document.querySelector(".oe_login_buttons ");const u=document.createElement("div"),m=(u.className="ob-button-container",document.querySelector("input[name=login]")),b=document.querySelector("input[name=password]");{var p=u,w=({on:e,makeState:o})=>{const[n,t]=o({open:!1}),[r,s]=o({user:window.localStorage.getItem(l)},e=>window.localStorage.setItem(l,e));r.user||s("user","admin");o=e=>async()=>{e&&e!==r.user&&await s("user",e),e&&(m.value=b.value=e),u.closest("form").submit()};return e("click",e=>{e.target.closest("#ob-toggle")||t("open",!1)},!0),`
+        <button class="btn btn-primary" ${e("click",o())}>
+          Log in
+        </button>
+        <div class="btn-group">
+          <button class="btn btn-primary" ${e("click",o(r.user))}>
+            Log in as ${r.user}
+          </button>
+          <button id="ob-toggle" type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" ${e("click",()=>t("open",!n.open))} />
+          ${n.open?`
+          <ul class="dropdown-menu show">
+            <li class="dropdown-item" ${e("click",o("admin"))}>
+              <span>Admin</span>
+            </li>
+            <li class="dropdown-item" ${e("click",o("demo"))}>
+              <span>Demo</span>
+            </li>
+            <li class="dropdown-item" ${e("click",o("portal"))}>
+              <span>Portal</span>
+            </li>
+          </ul>
+          `:""}
+        </div>`};let s=1,i=!1,c=!0;const g=[],v={},f=async()=>{if(!i){i=!0,await Promise.resolve();const r=[];for(var[e,o]of g)window.removeEventListener(e,o);var n={render:f,makeState(e){return c&&Object.assign(v,e),[v,async(e,o)=>{v[e]=o,c||f()}]},on(o,n,e=!1){if(e)return window.addEventListener(o,n),g.push([o,n]),"";const t=d+`="${s++}"`;return r.push(()=>{var e=p.querySelector(`[${t}]`);e.removeAttribute(d),e.addEventListener(o,n)}),t}};p.innerHTML=w(n);for(const t of r)t();i=!1,c=!1}};f()}n.children[0].remove(),n.prepend(u)})(window.top);
 ```
 
 
