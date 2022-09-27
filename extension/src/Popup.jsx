@@ -62,7 +62,7 @@ export const Popup = () => {
           autoFocus
         />
       </div>
-      <ul className="scripts overflow-auto pe-2 h-100 list-unstyled">
+      <ul className="scripts overflow-auto mb-3 pe-2 h-100 list-group">
         {scripts.map((script) => (
           <Script
             key={script.id}
@@ -71,6 +71,11 @@ export const Popup = () => {
             onHover={() => setHovered(script.id)}
           />
         ))}
+        {!scripts.length && (
+          <div class="list-group-item bg-dark text-muted fst-italic">
+            No result for "{query}"
+          </div>
+        )}
       </ul>
     </main>
   );

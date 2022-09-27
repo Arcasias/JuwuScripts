@@ -12,12 +12,13 @@ interface Directives {
 type Directive = keyof Directives;
 
 export interface ScriptInfo {
-  id: string;
-  fileName: string;
-  ext: string;
-  title: string;
-  directives: Directives;
   content: string;
+  directives: Directives;
+  ext: string;
+  fileName: string;
+  id: string;
+  title: string;
+  url: string;
 }
 
 const SRC_FOLDER = "src/public";
@@ -96,12 +97,13 @@ const readScript = async (fileName: string) => {
   }
 
   return {
-    id: fileNameParts.join(".").replace(/_/, "-"),
-    fileName,
-    ext,
-    title: title.filter(filterEmpty).join(" "),
-    directives: directives as Record<Directive, any>,
     content: result.code,
+    directives: directives as Record<Directive, any>,
+    ext,
+    fileName,
+    id: fileNameParts.join(".").replace(/_/, "-"),
+    title: title.filter(filterEmpty).join(" "),
+    url: [GITHUB_URL, SRC_FOLDER, fileName].join("/"),
   };
 };
 
@@ -132,12 +134,12 @@ export const getScriptInfos = async () => {
 export const buildJsScript = (info: ScriptInfo) => serialize(info);
 
 export const buildMdScript = ({
-  id,
-  fileName,
-  ext,
-  title,
-  directives,
   content,
+  directives,
+  ext,
+  id,
+  title,
+  url,
 }: ScriptInfo) => {
   const additionalInfos = [];
   if (directives.website) {
@@ -161,10 +163,8 @@ export const buildMdScript = ({
     );
   }
 
-  const gitHubLink = [GITHUB_URL, SRC_FOLDER, fileName].join("/");
-
   return `
-## <a name="${id}">[${title}](${gitHubLink})</a>
+## <a name="${id}">[${title}](${url})</a>
 
 ${directives.description || ""}
 

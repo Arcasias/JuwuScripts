@@ -1,6 +1,6 @@
-/*global chrome*/
 import { useEffect, useState } from "react";
 import "./Script.scss";
+import { scripting, storage, tabs } from "./services";
 
 const getWebsiteHostname = (url) => {
   const a = document.createElement("a");
@@ -29,24 +29,26 @@ const LIST_ITEM_CLASS = "list-group-item bg-dark text-light";
 
 export const Script = ({
   script: {
-    id,
-    fileName,
-    title,
     directives: { description, result, use, website },
+    fileName,
+    id,
+    title,
+    url,
   },
   hovered,
   onHover,
 }) => {
-  const [status, setStatus] = useState(null);
   let locked = false;
 
+  const [error, setError] = useState("");
+  const [runCount, setRunCount] = useState(0);
   const [autoRunning, setAutorunning] = useState(false);
   const hostName = (website && getWebsiteHostname(website)) || false;
 
   useEffect(() => {
     const fetchAutorunning = async () => {
       try {
-        const value = await chrome.storage.sync.get(id);
+        const value = await storage.sync.get(id);
         setAutorunning(Boolean(value[id]));
       } catch (err) {
         console.debug(err);
@@ -64,21 +66,16 @@ export const Script = ({
     setAutorunning(activate);
     try {
       if (activate) {
-        await chrome.storage.sync.set({ [id]: { id, hostName, fileName } });
+        await storage.sync.set({ [id]: { id, hostName, fileName } });
       } else {
-        await chrome.storage.sync.remove(id);
+        await storage.sync.remove(id);
       }
     } catch (err) {
       setAutorunning(previous);
       console.debug(err);
     }
-    if (status === "active") {
-      return;
-    }
-    if (activate) {
+    if (runCount === 0) {
       run();
-    } else {
-      setStatus(null);
     }
   };
 
@@ -87,51 +84,78 @@ export const Script = ({
       return;
     }
     locked = true;
-    setStatus("loading");
     try {
-      const [tab] = await chrome.tabs.query({
+      const [tab] = await tabs.query({
         active: true,
         currentWindow: true,
       });
-      await chrome.scripting.executeScript({
+      await scripting.executeScript({
         target: { tabId: tab.id },
         files: [`./src/public/${fileName}`],
       });
-      setStatus("active");
+      setRunCount(runCount + 1);
     } catch (err) {
       console.debug(err);
-      setStatus("error");
+      setError(err.message);
     } finally {
       locked = false;
     }
   };
 
-  const getStatusClass = () => {
-    if (status === "active") {
-      return "success";
-    } else if (status === "error") {
-      return "danger";
-    } else {
-      return "muted";
+  const getStatusAttr = (prefix) => {
+    if (error) {
+      return `${prefix}-danger`;
+    } else if (autoRunning || runCount > 0) {
+      return `${prefix}-success`;
     }
   };
 
+  const getClass = (...classNames) => classNames.filter(Boolean).join(" ");
+
   return (
     <li
-      className={`script card bg-dark mt-2 ${
-        status ? "border-" + getStatusClass() : ""
-      } ${hovered ? "hovered" : ""}`}
+      className={getClass(
+        "script card bg-dark text-light mt-2",
+        getStatusAttr("border"),
+        hovered && "hovered"
+      )}
       tabIndex="0"
       onMouseEnter={onHover}
     >
       <div className="card-body">
-        <h5
-          className={`script-title card-title ${
-            status ? "text-" + getStatusClass() : ""
-          }`}
+        <h6
+          className={getClass(
+            "script-title card-title d-flex align-items-center",
+            getStatusAttr("text"),
+            !hovered && "m-0"
+          )}
         >
-          {title}
-        </h5>
+          <a href={url} target="_blank" rel="noreferrer" className="text-reset text-decoration-none">
+            {title}
+          </a>
+          <div className="ms-auto btn-group">
+            <button
+              className={`btn p-0 ps-1 text-${
+                runCount > 0 ? "success" : "light"
+              }`}
+              onClick={run}
+              title="Run script"
+            >
+              <i className="bi bi-play-fill" />
+            </button>
+            <button
+              className={`btn p-0 px-1 text-${
+                autoRunning ? "success" : "light"
+              }`}
+              onClick={() => setAutorun(!autoRunning)}
+              title={
+                autoRunning ? "Stop autorunning" : "Autorun script at page load"
+              }
+            >
+              <i className="bi bi-arrow-repeat" />
+            </button>
+          </div>
+        </h6>
         {hovered && description && (
           <p className="card-text">{formatText(description)}</p>
         )}
@@ -154,57 +178,17 @@ export const Script = ({
           {use && <li className={LIST_ITEM_CLASS}>Use: {use}</li>}
         </ul>
       )}
-      {hovered && !result && (
-        <footer className="card-footer d-flex align-items-center">
-          {status === "loading" ? (
-            <span className="fst-italic text-muted">Loading...</span>
-          ) : status === "error" ? (
-            <span className="d-flex align-items-center justify-content-between">
-              <span className="fst-italic text-danger">
-                Error: check the console{" "}
-              </span>
-              <button
-                className="btn btn-sm border border-danger text-danger"
-                onClick={() => setStatus(null)}
-              >
-                Dismiss
-              </button>
-            </span>
-          ) : (
-            <>
-              {!autoRunning &&
-                (status ? (
-                  <span className={`fst-italic text-${getStatusClass()} me-2`}>
-                    {status === "active" ? <>Active</> : <>Loading ...</>}
-                  </span>
-                ) : (
-                  <button className="btn btn-sm btn-primary me-2" onClick={run}>
-                    Run
-                  </button>
-                ))}
-              {status !== "error" &&
-                (autoRunning ? (
-                  <>
-                    <span className="fst-italic text-success me-2">
-                      Auto running
-                    </span>
-                    <button
-                      className="btn btn-sm border border-danger text-danger"
-                      onClick={() => setAutorun(false)}
-                    >
-                      Cancel
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    className="btn btn-sm btn-primary"
-                    onClick={() => setAutorun(true)}
-                  >
-                    Autorun
-                  </button>
-                ))}
-            </>
-          )}
+      {hovered && error && (
+        <footer className="card-footer d-flex align-items-center justify-content-between">
+          <span className="fst-italic text-danger">
+            Error: check the console{" "}
+          </span>
+          <button
+            className="btn btn-sm border border-danger text-danger"
+            onClick={() => setError("")}
+          >
+            Dismiss
+          </button>
         </footer>
       )}
     </li>
