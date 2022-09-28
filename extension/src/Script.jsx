@@ -91,7 +91,8 @@ export const Script = ({
       });
       await scripting.executeScript({
         target: { tabId: tab.id },
-        files: [`./src/public/${fileName}`],
+        files: [`./extension/scripts/${fileName}`],
+        world: "MAIN",
       });
       setRunCount(runCount + 1);
     } catch (err) {

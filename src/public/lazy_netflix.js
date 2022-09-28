@@ -2,14 +2,12 @@
  * Netflix & Do nothing
  *
  * @description Automatically click on the `Skip Intro` and `Next Episode` buttons as soon as they appear.
- * @use after launching any video.
  * @website https://www.netflix.com/
+ * @wrapper observer
  */
 
-new MutationObserver(() =>
-  [
-    ...document.querySelectorAll(
-      ".watch-video--skip-content-button,[data-uia=next-episode-seamless-button]"
-    ),
-  ].map((e) => e.click())
-).observe(document.body, { childList: true, subtree: true });
+[
+  ...document.querySelectorAll(
+    ".watch-video--skip-content-button,[data-uia=next-episode-seamless-button]"
+  ),
+].forEach((e) => e.click());

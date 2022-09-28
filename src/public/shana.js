@@ -3,9 +3,9 @@
  *
  * @description Filter the search results to only have 1080p links.
  * @website https://www.shanaproject.com/
- * @use after searching for any anime
+ * @wrapper observer
  */
 
-[...document.getElementsByClassName("release_block")].map(
+[...document.getElementsByClassName("release_block")].forEach(
   (x) => !/1080p/.test(x.innerText) && x.remove()
-).length;
+);

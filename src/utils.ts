@@ -7,9 +7,15 @@ interface Directives {
   result?: string[];
   use?: string;
   website?: string;
+  wrapper: WrapMode;
+}
+
+interface WrapperOptions {
+  async?: boolean;
 }
 
 type Directive = keyof Directives;
+type WrapMode = "iife" | "observer" | "none";
 
 export interface ScriptInfo {
   content: string;
@@ -45,7 +51,7 @@ const readScript = async (fileName: string) => {
   const fileNameParts = fileName.split(".");
   const ext = fileNameParts.pop()!;
   const title: string[] = [];
-  const directives: Directives = {};
+  const directives: Directives = { wrapper: "iife" };
 
   let startingLine: number = 0;
 
@@ -69,6 +75,8 @@ const readScript = async (fileName: string) => {
             directives[directive] = trimmed
               .split(/[&,]/)
               .map((x: string) => x.trim());
+          } else if (directive === "wrapper") {
+            directives[directive] = trimmed as WrapMode;
           } else {
             directives[directive] = trimmed;
           }
@@ -82,11 +90,22 @@ const readScript = async (fileName: string) => {
   }
 
   console.log("Minifying file:", fileName);
-  const content = lines
+  let content = lines
     .slice(startingLine)
     .filter(filterEmpty)
     .map(cleanLine)
     .join("\n");
+  const mayBeAsync = /\bawait\b/.test(content); // Naive check -- better safe than sorry
+  switch (directives.wrapper) {
+    case "iife": {
+      content = wrapInIIFE(content, { async: mayBeAsync });
+      break;
+    }
+    case "observer": {
+      content = wrapInObserver(content, { async: mayBeAsync });
+      break;
+    }
+  }
   const result = minify(content, { warnings: "verbose" });
   if (result.error) {
     console.error(`> ERROR (skipping script): ->`, result.error, "\n");
@@ -121,6 +140,21 @@ const serialize = (value: any): string => {
   }
 };
 
+const wrapInFE = (code: string, options: WrapperOptions = {}) =>
+  /* js */ `${options.async ? "async" : ""}()=>{${code}}`;
+
+const wrapInIIFE = (code: string, options?: WrapperOptions) =>
+  /* js */ `(${wrapInFE(code, options)})();`;
+
+const wrapInObserver = (code: string, options?: WrapperOptions) =>
+  wrapInIIFE(
+    /* js */ `let callback=${wrapInFE(
+      code,
+      options
+    )};new MutationObserver(callback).observe(document.body,{childList:true,subtree:true});callback();`,
+    { async: false }
+  );
+
 export const getScriptInfos = async () => {
   const scriptFileNames = await readdir(SRC_FOLDER);
   const filteredNames = scriptFileNames.filter(isSupported);
@@ -133,53 +167,9 @@ export const getScriptInfos = async () => {
 // Script builders
 export const buildJsScript = (info: ScriptInfo) => serialize(info);
 
-export const buildMdScript = ({
-  content,
-  directives,
-  ext,
-  id,
-  title,
-  url,
-}: ScriptInfo) => {
-  const additionalInfos = [];
-  if (directives.website) {
-    additionalInfos.push(`- Works on: ${directives.website}`);
-  }
-  if (directives.use) {
-    additionalInfos.push(`- Use: ${directives.use}`);
-  }
-  if (directives.result) {
-    const result = directives.result.map(serialize);
-    const sing = result.length === 1;
-    additionalInfos.push(
-      `- This script defines the function${sing ? "" : "s"} ${[
-        result.slice(0, -1).join(", "),
-        result.at(-1),
-      ]
-        .filter(filterEmpty)
-        .join(" and ")}. You have to call ${sing ? "it" : "them"} to see ${
-        sing ? "its" : "their"
-      } effects.`
-    );
-  }
-
-  return `
-## <a name="${id}">[${title}](${url})</a>
-
-${directives.description || ""}
-
-${additionalInfos.join("\n")}
-
-\`\`\`${ext}
-${content}
-\`\`\`
-
-`;
-};
-
 // Index builders
-export const buildMdIndexEntry = ({ id, title }: ScriptInfo) =>
-  `- [${title}](#${id})`;
+export const buildMdIndexEntry = ({ title, url }: ScriptInfo) =>
+  `- [${title}](${url})`;
 
 // Comment builders
 export const jsComment = (comment: string) => `/* ${comment} */`;

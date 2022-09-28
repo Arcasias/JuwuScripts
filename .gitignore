@@ -1,6 +1,10 @@
 # NPM shit
-node_modules
+node_modules/
 package-lock.json
+
+# Built shit
+build/
+scripts/
 
 # Won't publish local stuff
 src/local

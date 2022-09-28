@@ -1,53 +1,36 @@
-/*global chrome*/
-
 const makeDummyScripting = () => {
   console.warn("Scripting service not available.");
   return {
-    executeScript({ target, files }) {
+    executeScript: ({ target, files }) =>
       console.debug(
         `Executed scripts "${files.join(", ")}" on target:`,
         target
-      );
-    },
+      ),
   };
 };
 
 const makeDummyStorage = () => {
   console.warn("Storage service not available.");
-  const items = new Map();
+  const storage = new Storage();
   return {
     sync: {
-      async get(...keys) {
-        const result = {};
-        for (const key of keys) {
-          result[key] = items.get(key);
-        }
-        return result;
-      },
-      async set(values) {
-        for (const [key, value] of Object.entries(values)) {
-          items.set(key, value);
-        }
-      },
-      async remove(...keys) {
-        for (const key of keys) {
-          items.delete(key);
-        }
-      },
+      get: (...keys) =>
+        keys.reduce((r, k) => ({ ...r, [k]: storage.getItem(k) }), {}),
+      set: (values) =>
+        Object.entries(values).forEach(([k, v]) => storage.setItem(k, v)),
+      remove: (...keys) => keys.forEach((k) => storage.removeItem(k)),
     },
   };
 };
 
 const makeDummyTabs = () => {
   return {
-    async query() {
-      return [{ id: Symbol("newId") }];
-    },
+    query: () => [{ id: Symbol("newId") }],
   };
 };
 
-export const scripting = chrome.scripting || makeDummyScripting();
+export const scripting = (window.browser || window.chrome).scripting || makeDummyScripting();
 
-export const storage = chrome.storage || makeDummyStorage();
+export const storage = (window.browser || window.chrome).storage || makeDummyStorage();
 
-export const tabs = chrome.tabs || makeDummyTabs();
+export const tabs = (window.browser || window.chrome).tabs || makeDummyTabs();

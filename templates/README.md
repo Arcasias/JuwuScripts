@@ -6,19 +6,17 @@ This is more of a personnal tool for me to run my scripts locally but feel free 
 
 You can [build and use](#chrome-extension) the integrated Chrome extension to have a panel (auto-)running your scripts easily.
 
-## Index
+## <a name="index"></a> Index
 
-<!-- index -->
+<!-- scripts -->
 
-## How to use
+## <a name="how-to-use"></a> How to use
 
 You will first need to open the console (<code style="color:#a8f">F12</code>). Then there are 3 scenarios:
 
 1. The script is <b style="color:#4c4">inline</b> (no <b style="color:#c80">function</b> definition): you can then simply paste the code, press <code style="color:#a8f">Enter</code> and close the console. This should do the trick.
 2. The script defines a <b style="color:#c80">function</b> that you can call with the desired <b style="color:#cb0">arguments</b> (there should be enought doc on each script to know what arguments you can use).
 3. The script defines something else, which should be specified by the script description.
-
-<!-- scripts -->
 
 ## <a name="chrome-extension"></a> Chrome extension
 
