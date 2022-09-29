@@ -35,8 +35,8 @@ export const Script = ({
     title,
     url,
   },
-  hovered,
-  onHover,
+  selected,
+  onClick,
 }) => {
   let locked = false;
 
@@ -74,7 +74,7 @@ export const Script = ({
       setAutorunning(previous);
       console.debug(err);
     }
-    if (runCount === 0) {
+    if (activate && runCount === 0) {
       run();
     }
   };
@@ -116,39 +116,52 @@ export const Script = ({
   return (
     <li
       className={getClass(
-        "script card bg-dark text-light mt-2",
+        "Script bg-dark text-light",
         getStatusAttr("border"),
-        hovered && "hovered"
+        selected ? "card selected my-2" : "list-group-item border-0"
       )}
       tabIndex="0"
-      onMouseEnter={onHover}
+      onClick={onClick}
+      onKeyDown={(ev) => ev.key === "Enter" && onClick(ev)}
     >
       <div className="card-body">
         <h6
           className={getClass(
             "script-title card-title d-flex align-items-center",
             getStatusAttr("text"),
-            !hovered && "m-0"
+            !selected && "m-0"
           )}
         >
-          <a href={url} target="_blank" rel="noreferrer" className="text-reset text-decoration-none">
+          <span className="text-truncate w-100" title={title}>
             {title}
-          </a>
+          </span>
           <div className="ms-auto btn-group">
             <button
-              className={`btn p-0 ps-1 text-${
-                runCount > 0 ? "success" : "light"
-              }`}
-              onClick={run}
+              className={getClass(
+                `btn border-0 p-0 ps-1 text-${
+                  runCount > 0 ? "success" : "light"
+                }`,
+                runCount > 0 && "grow"
+              )}
+              onClick={(ev) => {
+                ev.stopPropagation();
+                run();
+              }}
               title="Run script"
             >
               <i className="bi bi-play-fill" />
             </button>
             <button
-              className={`btn p-0 px-1 text-${
-                autoRunning ? "success" : "light"
-              }`}
-              onClick={() => setAutorun(!autoRunning)}
+              className={getClass(
+                `btn border-0 p-0 px-1 text-${
+                  autoRunning ? "success" : "light"
+                }`,
+                autoRunning && "spin"
+              )}
+              onClick={(ev) => {
+                ev.stopPropagation();
+                setAutorun(!autoRunning);
+              }}
               title={
                 autoRunning ? "Stop autorunning" : "Autorun script at page load"
               }
@@ -157,11 +170,11 @@ export const Script = ({
             </button>
           </div>
         </h6>
-        {hovered && description && (
+        {selected && description && (
           <p className="card-text">{formatText(description)}</p>
         )}
       </div>
-      {hovered && (
+      {selected && (
         <ul className="border-0 list-group list-group-flush">
           {website && (
             <li className={LIST_ITEM_CLASS}>
@@ -177,19 +190,35 @@ export const Script = ({
             </li>
           )}
           {use && <li className={LIST_ITEM_CLASS}>Use: {use}</li>}
+          {error && (
+            <li
+              className={`${LIST_ITEM_CLASS} d-flex align-items-center justify-content-between`}
+            >
+              <span className="fst-italic text-danger">
+                Error: check the console{" "}
+              </span>
+              <button
+                className="btn btn-sm border border-danger text-danger"
+                onClick={() => setError("")}
+              >
+                Dismiss
+              </button>
+            </li>
+          )}
         </ul>
       )}
-      {hovered && error && (
+      {selected && (
         <footer className="card-footer d-flex align-items-center justify-content-between">
-          <span className="fst-italic text-danger">
-            Error: check the console{" "}
-          </span>
-          <button
-            className="btn btn-sm border border-danger text-danger"
-            onClick={() => setError("")}
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-reset text-decoration-none"
           >
-            Dismiss
-          </button>
+            <code className="text-muted">
+              Open on Github <i className="bi bi-box-arrow-up-right" />
+            </code>
+          </a>
         </footer>
       )}
     </li>

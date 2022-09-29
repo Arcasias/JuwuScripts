@@ -11,14 +11,14 @@ const makeDummyScripting = () => {
 
 const makeDummyStorage = () => {
   console.warn("Storage service not available.");
-  const storage = new Storage();
+  const storage = new Map();
   return {
     sync: {
       get: (...keys) =>
-        keys.reduce((r, k) => ({ ...r, [k]: storage.getItem(k) }), {}),
+        keys.reduce((r, k) => ({ ...r, [k]: storage.get(k) }), {}),
       set: (values) =>
-        Object.entries(values).forEach(([k, v]) => storage.setItem(k, v)),
-      remove: (...keys) => keys.forEach((k) => storage.removeItem(k)),
+        Object.entries(values).forEach(([k, v]) => storage.set(k, v)),
+      remove: (...keys) => keys.forEach((k) => storage.delete(k)),
     },
   };
 };
@@ -29,8 +29,10 @@ const makeDummyTabs = () => {
   };
 };
 
-export const scripting = (window.browser || window.chrome).scripting || makeDummyScripting();
+export const scripting =
+  (window.browser || window.chrome).scripting || makeDummyScripting();
 
-export const storage = (window.browser || window.chrome).storage || makeDummyStorage();
+export const storage =
+  (window.browser || window.chrome).storage || makeDummyStorage();
 
 export const tabs = (window.browser || window.chrome).tabs || makeDummyTabs();
