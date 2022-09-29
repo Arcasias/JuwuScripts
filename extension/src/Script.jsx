@@ -29,7 +29,8 @@ const LIST_ITEM_CLASS = "list-group-item bg-dark text-light";
 
 export const Script = ({
   script: {
-    directives: { description, result, use, website },
+    directives: { description, use, website },
+    exports,
     fileName,
     id,
     title,
@@ -190,6 +191,11 @@ export const Script = ({
             </li>
           )}
           {use && <li className={LIST_ITEM_CLASS}>Use: {use}</li>}
+          {Object.entries(exports).map(([key, type]) => (
+            <li key={key} className={`${LIST_ITEM_CLASS}`}>
+              Declares {type}: <code>{key}</code>
+            </li>
+          ))}
           {error && (
             <li
               className={`${LIST_ITEM_CLASS} d-flex align-items-center justify-content-between`}

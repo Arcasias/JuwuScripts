@@ -2,7 +2,6 @@
  * Global scanner
  *
  * @description Scan the `window` object for any additionnal global key.
- * @result scanGlob
  */
 
 const globKeys =
@@ -10,7 +9,7 @@ const globKeys =
     ","
   );
 
-window.scanGlob = (authorized = [], autoRemove = false) => {
+export const scanGlob = (authorized = [], autoRemove = false) => {
   const additionalKeys = [];
   const whiteList = [...globKeys, ...authorized, "scanGlob"];
   for (const key in window) {

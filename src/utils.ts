@@ -4,7 +4,6 @@ import { minify } from "uglify-js";
 
 interface Directives {
   description?: string;
-  result?: string[];
   use?: string;
   website?: string;
   wrapper: WrapMode;
@@ -15,6 +14,7 @@ interface WrapperOptions {
 }
 
 type Directive = keyof Directives;
+type Exports = Record<string, "function" | "object">;
 type WrapMode = "iife" | "observer" | "none";
 
 export interface ScriptInfo {
@@ -71,15 +71,7 @@ const readScript = async (fileName: string) => {
           const [, name, content] = directiveMatch;
           const directive = name.trim() as Directive;
           const trimmed = content.trim();
-          if (directive === "result") {
-            directives[directive] = trimmed
-              .split(/[&,]/)
-              .map((x: string) => x.trim());
-          } else if (directive === "wrapper") {
-            directives[directive] = trimmed as WrapMode;
-          } else {
-            directives[directive] = trimmed;
-          }
+          directives[directive] = trimmed as any;
         } else {
           title.push(trimmed);
         }
@@ -95,6 +87,8 @@ const readScript = async (fileName: string) => {
     .filter(filterEmpty)
     .map(cleanLine)
     .join("\n");
+
+  // Wrap content
   const mayBeAsync = /\bawait\b/.test(content); // Naive check -- better safe than sorry
   switch (directives.wrapper) {
     case "iife": {
@@ -106,6 +100,23 @@ const readScript = async (fileName: string) => {
       break;
     }
   }
+
+  // Extract exports
+  const exports: Exports = {};
+  content = content.replaceAll(
+    /\bexport\s+(const|let|var|function)\s+([\w-]+)?\s*=?\s*(\()?/g,
+    (_, keyword, exportedTerm, parenthesis) => {
+      const isFunction = parenthesis || keyword === "function";
+      exports[exportedTerm] = isFunction ? "function" : "object";
+      return `window.${exportedTerm}=${
+        keyword === "function" ? "function" : ""
+      }${parenthesis || ""}`;
+    }
+  );
+
+  console.log(content);
+
+  // Minify content
   const result = minify(content, { warnings: "verbose" });
   if (result.error) {
     console.error(`> ERROR (skipping script): ->`, result.error, "\n");
@@ -117,8 +128,9 @@ const readScript = async (fileName: string) => {
 
   return {
     content: result.code,
-    directives: directives as Record<Directive, any>,
+    directives,
     ext,
+    exports,
     fileName,
     id: fileNameParts.join(".").replace(/_/, "-"),
     title: title.filter(filterEmpty).join(" "),
