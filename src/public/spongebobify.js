@@ -1,7 +1,7 @@
 /**
  * Spongebobify
  *
- * @description Time to sPonGeBobIfY your texts!
+ * @description Time to **sPonGeBobIfY** your texts!
  */
 
 export const spongebobify = (text) => {

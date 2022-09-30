@@ -1,7 +1,7 @@
 /**
  * Storage cleaner
  *
- * @description Clean local and session storages and prevent them from being used.
+ * @description Cleans local and session storages and prevents them from being used.
  */
 
 Storage.prototype.setItem = (key, value) => {

@@ -7,7 +7,7 @@ import {
   jsComment,
   mdComment,
   ScriptInfo,
-} from "./utils";
+} from "./loader_utils";
 import { join } from "path";
 
 const README_TEMPLATE_PATH = "./templates/README.md";
@@ -16,7 +16,7 @@ const README_PATH = "./README.md";
 const POPUP_JS_TEMPLATE_PATH = "./templates/scripts.js";
 const POPUP_JS_PATH = "./extension/src/scripts.js";
 
-const MIN_SCRIPTS_PATH = "./extension/scripts";
+const BUILT_SCRIPTS_PATH = "./extension/scripts";
 
 const buildREADME = async (scriptInfos: ScriptInfo[]) => {
   const template = await readFile(README_TEMPLATE_PATH, "utf8");
@@ -35,15 +35,24 @@ const buildPopupJs = async (scriptInfos: ScriptInfo[]) => {
   await writeFile(POPUP_JS_PATH, fileContent);
 };
 
-const minifyScripts = async (scriptInfos: ScriptInfo[]) => {
-  if (!existsSync(MIN_SCRIPTS_PATH)) {
-    await mkdir(MIN_SCRIPTS_PATH);
+const buildScripts = async (scriptInfos: ScriptInfo[]) => {
+  if (!existsSync(BUILT_SCRIPTS_PATH)) {
+    await mkdir(BUILT_SCRIPTS_PATH);
   }
-  await Promise.all(
-    scriptInfos.map((script) =>
-      writeFile(join(MIN_SCRIPTS_PATH, script.fileName), script.content)
-    )
-  );
+  await Promise.all(scriptInfos.map(writeScripts));
+};
+
+const writeScripts = async (scriptInfo: ScriptInfo) => {
+  await Promise.all([
+    writeFile(
+      join(BUILT_SCRIPTS_PATH, scriptInfo.fileName),
+      scriptInfo.content
+    ),
+    writeFile(
+      join(BUILT_SCRIPTS_PATH, scriptInfo.minFileName),
+      scriptInfo.minContent
+    ),
+  ]);
 };
 
 // Main
@@ -51,7 +60,7 @@ const minifyScripts = async (scriptInfos: ScriptInfo[]) => {
   const startTime = Date.now();
   const scriptInfos = await getScriptInfos();
   await Promise.all(
-    [buildREADME, buildPopupJs, minifyScripts].map((fn) => fn(scriptInfos))
+    [buildREADME, buildPopupJs, buildScripts].map((fn) => fn(scriptInfos))
   );
   console.log(`Scripts finished building in`, Date.now() - startTime, "ms");
 })();

@@ -16,9 +16,14 @@ const makeDummyStorage = () => {
     sync: {
       get: (...keys) =>
         keys.reduce((r, k) => ({ ...r, [k]: storage.get(k) }), {}),
-      set: (values) =>
-        Object.entries(values).forEach(([k, v]) => storage.set(k, v)),
-      remove: (...keys) => keys.forEach((k) => storage.delete(k)),
+      set: (values) => {
+        Object.entries(values).forEach(([k, v]) => storage.set(k, v));
+        console.debug("Storage: set", { values });
+      },
+      remove: (...keys) => {
+        keys.forEach((k) => storage.delete(k));
+        console.debug("Storage: remove", keys);
+      },
     },
   };
 };

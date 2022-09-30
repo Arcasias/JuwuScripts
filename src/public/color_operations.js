@@ -1,7 +1,7 @@
 /**
  * Hexadecimal to RGB and vice-versa
  *
- * @description Convert RGB arrays to hexadecimal colors and vice-versa.
+ * @description Convert **RGB arrays** to **hexadecimal** colors and vice-versa.
  */
 
 export const hexToRgb = (hex) =>

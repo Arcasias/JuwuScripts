@@ -1,7 +1,7 @@
 /**
  * Run away
  *
- * @description Makes the interactive elements go crazy!
+ * @description Makes the interactive elements go *crazy*!
  */
 
 let running = false;

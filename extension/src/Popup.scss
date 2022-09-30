@@ -3,6 +3,16 @@
   max-height: 500px;
 }
 
+:root {
+  --bs-primary: #1888ff;
+  --bs-link-color: var(--bs-primary);
+  --bs-success: #20c060;
+  --bs-info: #40e0ff;
+  --bs-primary-rgb: 24, 136, 255;
+  --bs-success-rgb: 32, 192, 96;
+  --bs-info-rgb: 64, 224, 255;
+}
+
 ::-webkit-scrollbar {
   width: 0.5rem;
   height: 0.5rem;

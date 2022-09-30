@@ -5,8 +5,10 @@ import { minify } from "uglify-js";
 interface Directives {
   description?: string;
   use?: string;
+  autorun: boolean;
+  run: "clipboard" | boolean;
   website?: string;
-  wrapper: WrapMode;
+  wrapper: "iife" | "observer" | false;
 }
 
 interface WrapperOptions {
@@ -15,7 +17,6 @@ interface WrapperOptions {
 
 type Directive = keyof Directives;
 type Exports = Record<string, "function" | "object">;
-type WrapMode = "iife" | "observer" | "none";
 
 export interface ScriptInfo {
   content: string;
@@ -23,6 +24,8 @@ export interface ScriptInfo {
   ext: string;
   fileName: string;
   id: string;
+  minContent: string;
+  minFileName: string;
   title: string;
   url: string;
 }
@@ -38,7 +41,12 @@ const COMMENT_END = /\*\//;
 const DIRECTIVE = /@(\w+)\s+(.*)/;
 
 // Helpers
+const isFalse = (expr: string) =>
+  /^(no|none|false|null|undefined|0)$/i.test(expr);
+
 const isSupported = (fileName: string) => /.(js|ts|html|s?css)$/.test(fileName);
+
+const isTrue = (expr: string) => /^(yes|true|1)$/i.test(expr);
 
 const filterEmpty = (line?: string) =>
   line?.length && !/^[\s\r\n]+$/.test(line);
@@ -50,8 +58,13 @@ const readScript = async (fileName: string) => {
   const lines = scriptContent.split("\n");
   const fileNameParts = fileName.split(".");
   const ext = fileNameParts.pop()!;
+  const minFileName = [...fileNameParts, "min", ext].join(".");
   const title: string[] = [];
-  const directives: Directives = { wrapper: "iife" };
+  const directives: Directives = {
+    autorun: true,
+    run: true,
+    wrapper: "iife",
+  };
 
   let startingLine: number = 0;
 
@@ -69,9 +82,14 @@ const readScript = async (fileName: string) => {
         const directiveMatch = trimmed.match(DIRECTIVE);
         if (directiveMatch) {
           const [, name, content] = directiveMatch;
-          const directive = name.trim() as Directive;
-          const trimmed = content.trim();
-          directives[directive] = trimmed as any;
+          const dirName = name.trim() as Directive;
+          let dirValue: string | boolean = content.trim();
+          if (isFalse(dirValue)) {
+            dirValue = false;
+          } else if (isTrue(dirValue)) {
+            dirValue = true;
+          }
+          (<any>directives)[dirName] = dirValue;
         } else {
           title.push(trimmed);
         }
@@ -81,7 +99,6 @@ const readScript = async (fileName: string) => {
     }
   }
 
-  console.log("Minifying file:", fileName);
   let content = lines
     .slice(startingLine)
     .filter(filterEmpty)
@@ -89,14 +106,16 @@ const readScript = async (fileName: string) => {
     .join("\n");
 
   // Wrap content
-  const mayBeAsync = /\bawait\b/.test(content); // Naive check -- better safe than sorry
+  const wrapperOptions = {
+    async: /\bawait\b/.test(content), // Naive check -- better safe than sorry
+  };
   switch (directives.wrapper) {
     case "iife": {
-      content = wrapInIIFE(content, { async: mayBeAsync });
+      content = wrapInIIFE(content, wrapperOptions);
       break;
     }
     case "observer": {
-      content = wrapInObserver(content, { async: mayBeAsync });
+      content = wrapInObserver(content, wrapperOptions);
       break;
     }
   }
@@ -108,15 +127,14 @@ const readScript = async (fileName: string) => {
     (_, keyword, exportedTerm, parenthesis) => {
       const isFunction = parenthesis || keyword === "function";
       exports[exportedTerm] = isFunction ? "function" : "object";
-      return `window.${exportedTerm}=${
-        keyword === "function" ? "function" : ""
+      return `window.${exportedTerm} = ${
+        keyword === "function" ? "function " : ""
       }${parenthesis || ""}`;
     }
   );
 
-  console.log(content);
-
   // Minify content
+  console.log("Minifying file:", fileName);
   const result = minify(content, { warnings: "verbose" });
   if (result.error) {
     console.error(`> ERROR (skipping script): ->`, result.error, "\n");
@@ -127,12 +145,14 @@ const readScript = async (fileName: string) => {
   }
 
   return {
-    content: result.code,
+    content,
     directives,
     ext,
     exports,
     fileName,
     id: fileNameParts.join(".").replace(/_/, "-"),
+    minContent: result.code,
+    minFileName,
     title: title.filter(filterEmpty).join(" "),
     url: [GITHUB_URL, SRC_FOLDER, fileName].join("/"),
   };
@@ -152,18 +172,25 @@ const serialize = (value: any): string => {
   }
 };
 
-const wrapInFE = (code: string, options: WrapperOptions = {}) =>
-  /* js */ `${options.async ? "async" : ""}()=>{${code}}`;
+const wrapInFE = (code: string, options: WrapperOptions = {}) => /* js */ `${
+  options.async ? "async " : ""
+}() => {
+${code}
+}`;
 
-const wrapInIIFE = (code: string, options?: WrapperOptions) =>
-  /* js */ `(${wrapInFE(code, options)})();`;
+const wrapInIIFE = (
+  code: string,
+  options?: WrapperOptions
+) => /* js */ `/* iife wrapper */
+(${wrapInFE(code, options)})();
+`;
 
 const wrapInObserver = (code: string, options?: WrapperOptions) =>
   wrapInIIFE(
-    /* js */ `let callback=${wrapInFE(
-      code,
-      options
-    )};new MutationObserver(callback).observe(document.body,{childList:true,subtree:true});callback();`,
+    /* js */ `/* observer wrapper */
+  const observerCallback = ${wrapInFE(code, options)};
+  new MutationObserver(observerCallback).observe(document.body, { childList:true, subtree:true });
+  observerCallback();`,
     { async: false }
   );
 
@@ -177,7 +204,14 @@ export const getScriptInfos = async () => {
 };
 
 // Script builders
-export const buildJsScript = (info: ScriptInfo) => serialize(info);
+export const buildJsScript = (info: ScriptInfo) => {
+  const relevantInfo: Partial<ScriptInfo> = { ...info };
+  delete relevantInfo.content;
+  if (relevantInfo.directives!.run !== "clipboard") {
+    delete relevantInfo.minContent;
+  }
+  return serialize(relevantInfo);
+};
 
 // Index builders
 export const buildMdIndexEntry = ({ title, url }: ScriptInfo) =>

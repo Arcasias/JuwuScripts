@@ -4,6 +4,7 @@
  * @description Automatically click on the `Skip Intro` and `Next Episode` buttons as soon as they appear.
  * @website https://www.netflix.com/
  * @wrapper observer
+ * @run false
  */
 
 [
