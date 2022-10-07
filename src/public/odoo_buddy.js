@@ -9,7 +9,7 @@ if (!window.odoo) {
   return;
 }
 
-const { odoo, owl } = window;
+const { odoo, owl, location } = window;
 
 // Console infos + getters
 if (!odoo.__OB_PATCH__) {
@@ -86,7 +86,10 @@ if (!odoo.__OB_PATCH__) {
 }
 
 // Login page
-if (window.location.pathname === "/web/login") {
+if (
+  location.pathname === "/web/login" &&
+  !/(www|runbot)\.odoo\.com/.test(location.hostname)
+) {
   const onWindowClick = (ev) => {
     setOpen(Boolean(ev.target.closest("#ob-toggle")));
   };
@@ -98,35 +101,33 @@ if (window.location.pathname === "/web/login") {
     }
   };
 
-  const renderTemplate = () => {
-    return /* xml */ `
-      <button class="btn btn-primary me-2" style="flex:1" ${submitHandler()}>
-        Log in
+  const renderTemplate = () => /* xml */ `
+    <button class="btn btn-primary ms-2 me-2" style="flex:1" ${submitHandler()}>
+      Log in
+    </button>
+    <div class="btn-group" style="flex:2.5">
+      <button class="btn btn-primary" ${submitHandler(state.user)}>
+        Log in as ${state.user}
       </button>
-      <div class="btn-group" style="flex:2.5">
-        <button class="btn btn-primary" ${submitHandler(state.user)}>
-          Log in as ${state.user}
-        </button>
-        <button id="ob-toggle" type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" />
-        ${
-          state.open
-            ? /* xml */ `
-        <ul class="dropdown-menu show">
-          <li class="dropdown-item" ${submitHandler("admin")}>
-            <span>Admin</span>
-          </li>
-          <li class="dropdown-item" ${submitHandler("demo")}>
-            <span>Demo</span>
-          </li>
-          <li class="dropdown-item" ${submitHandler("portal")}>
-            <span>Portal</span>
-          </li>
-        </ul>
-        `
-            : ""
-        }
-      </div>`;
-  };
+      <button id="ob-toggle" type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" />
+      ${
+        state.open
+          ? /* xml */ `
+      <ul class="dropdown-menu show">
+        <li class="dropdown-item" ${submitHandler("admin")}>
+          <span>Admin</span>
+        </li>
+        <li class="dropdown-item" ${submitHandler("demo")}>
+          <span>Demo</span>
+        </li>
+        <li class="dropdown-item" ${submitHandler("portal")}>
+          <span>Portal</span>
+        </li>
+      </ul>
+      `
+          : ""
+      }
+    </div>`;
 
   const setOpen = (open) => {
     if (open !== state.open) {
@@ -153,7 +154,7 @@ if (window.location.pathname === "/web/login") {
         if (user) {
           setUser(user);
         }
-        btnContainer.closest("form").submit();
+        form.submit();
       });
     });
     return attr;
@@ -179,7 +180,13 @@ if (window.location.pathname === "/web/login") {
   btnContainer.setAttribute("class", "d-flex");
 
   const loginInput = document.querySelector("input[name=login]");
+  loginInput.value = "";
   const pwdInput = document.querySelector("input[name=password]");
+  pwdInput.value = "";
+  const form = loginInput.closest("form");
+  for (const el of [loginInput, pwdInput, form]) {
+    el.setAttribute("autocomplete", "off");
+  }
 
   const renderFinalizers = [];
   const state = {
