@@ -30,7 +30,8 @@ export interface ScriptInfo {
   url: string;
 }
 
-const SRC_FOLDER = "src/public";
+const PUBLIC_FOLDER = "src/public";
+const LOCAL_FOLDER = "src/local";
 const GITHUB_URL = "https://github.com/Arcasias/scripts/blob/master";
 
 const SCRIPT_EXTS = ["js", "ts"];
@@ -53,8 +54,12 @@ const filterEmpty = (line?: string) =>
 
 const cleanLine = (line: string) => line.replaceAll(/[\r\n]+/g, "");
 
-const readScript = async (fileName: string) => {
-  const scriptContent = await readFile(join(SRC_FOLDER, fileName), "utf8");
+const readScript = async (folder: string, fileName: string) => {
+  const url =
+    folder === PUBLIC_FOLDER
+      ? [GITHUB_URL, PUBLIC_FOLDER, fileName].join("/")
+      : "";
+  const scriptContent = await readFile(join(folder, fileName), "utf8");
   const lines = scriptContent.split("\n");
   const fileNameParts = fileName.split(".");
   const ext = fileNameParts.pop()!;
@@ -154,8 +159,15 @@ const readScript = async (fileName: string) => {
     minContent: result.code,
     minFileName,
     title: title.filter(filterEmpty).join(" "),
-    url: [GITHUB_URL, SRC_FOLDER, fileName].join("/"),
+    url,
   };
+};
+
+const readScripts = async (folder: string) => {
+  const scriptNames = await readdir(folder);
+  return Promise.all(
+    scriptNames.filter(isSupported).map((fname) => readScript(folder, fname))
+  );
 };
 
 const serialize = (value: any): string => {
@@ -195,12 +207,13 @@ const wrapInObserver = (code: string, options?: WrapperOptions) =>
   );
 
 export const getScriptInfos = async () => {
-  const scriptFileNames = await readdir(SRC_FOLDER);
-  const filteredNames = scriptFileNames.filter(isSupported);
-  const scriptInfo = await Promise.all(filteredNames.map(readScript));
-  return scriptInfo.sort((a, b) =>
-    a.title > b.title ? 1 : a.title < b.title ? -1 : 0
-  );
+  const scriptInfo = await Promise.all([
+    readScripts(PUBLIC_FOLDER),
+    readScripts(LOCAL_FOLDER),
+  ]);
+  return scriptInfo
+    .flat()
+    .sort((a, b) => (a.title > b.title ? 1 : a.title < b.title ? -1 : 0));
 };
 
 // Script builders

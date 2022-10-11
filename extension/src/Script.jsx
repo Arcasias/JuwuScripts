@@ -255,16 +255,20 @@ export const Script = ({
       )}
       {selected && (
         <footer className="card-footer d-flex align-items-center justify-content-between">
-          <a
-            href={url}
-            target="_blank"
-            rel="noreferrer"
-            className="text-reset text-decoration-none"
-          >
-            <code className="text-muted">
-              Open on Github <i className="bi bi-box-arrow-up-right" />
-            </code>
-          </a>
+          {url ? (
+            <a
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              className="text-reset text-decoration-none"
+            >
+              <code className="text-muted">
+                Open on Github <i className="bi bi-box-arrow-up-right" />
+              </code>
+            </a>
+          ) : (
+            <span>Local file</span>
+          )}
         </footer>
       )}
     </li>
