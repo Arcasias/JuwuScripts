@@ -2,5 +2,8 @@
 node_modules/
 package-lock.json
 
+# Zipped shit
+extension.zip
+
 # Won't publish local stuff
 src/local/

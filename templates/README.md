@@ -1,4 +1,4 @@
-# Scripts
+# JuwuScripts
 
 Collection of useful or quirky scripts that I wrote or found and wanted to re-use easily.
 

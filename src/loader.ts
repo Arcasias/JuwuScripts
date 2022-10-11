@@ -7,7 +7,7 @@ import {
   jsComment,
   mdComment,
   ScriptInfo,
-} from "./loader_utils";
+} from "./build_utils";
 import { join } from "path";
 
 const README_TEMPLATE_PATH = "./templates/README.md";

@@ -1,6 +1,6 @@
 {
-  "name": "Scripts",
-  "description": "Bunch of useful and quirky Scripts",
+  "name": "JuwuScripts",
+  "description": "Bunch of useful and quirky scripts",
   "version": "0.1",
   "manifest_version": 3,
   "background": {
