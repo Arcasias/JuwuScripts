@@ -201,8 +201,14 @@ export const Script = ({
             )}
           </div>
         </h6>
-        {selected && directives.description && (
-          <p className="card-text">{formatText(directives.description)}</p>
+        {selected && (
+          <p className="card-text">
+            {directives.description ? (
+              formatText(directives.description)
+            ) : (
+              <>No description for this script.</>
+            )}
+          </p>
         )}
       </div>
       {selected && (
@@ -255,20 +261,20 @@ export const Script = ({
       )}
       {selected && (
         <footer className="card-footer d-flex align-items-center justify-content-between">
-          {url ? (
-            <a
-              href={url}
-              target="_blank"
-              rel="noreferrer"
-              className="text-reset text-decoration-none"
-            >
-              <code className="text-muted">
+          <code className="text-muted">
+            {url ? (
+              <a
+                href={url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-reset text-decoration-none"
+              >
                 Open on Github <i className="bi bi-box-arrow-up-right" />
-              </code>
-            </a>
-          ) : (
-            <span>Local file</span>
-          )}
+              </a>
+            ) : (
+              <span>Local file</span>
+            )}
+          </code>
         </footer>
       )}
     </li>

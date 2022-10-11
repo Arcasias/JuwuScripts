@@ -1,3 +1,4 @@
+import { existsSync } from "fs";
 import { readdir, readFile } from "fs/promises";
 import { join } from "path";
 import { minify } from "uglify-js";
@@ -9,6 +10,7 @@ interface Directives {
   run: "clipboard" | boolean;
   website?: string;
   wrapper: "iife" | "observer" | false;
+  ignore?: boolean;
 }
 
 interface WrapperOptions {
@@ -34,18 +36,19 @@ const PUBLIC_FOLDER = "src/public";
 const LOCAL_FOLDER = "src/local";
 const GITHUB_URL = "https://github.com/Arcasias/scripts/blob/master";
 
-const SCRIPT_EXTS = ["js", "ts"];
-
-const COMMENT_START = /\/\*\*/;
+const COMMENT_START = /^\s*\/\*/;
 const COMMENT_LINE = /^\s*\*/;
-const COMMENT_END = /\*\//;
-const DIRECTIVE = /@(\w+)\s+(.*)/;
+const COMMENT_END = /\*\/\s*$/;
+const DIRECTIVE = /@([\w-]+)(.*)?/;
 
 // Helpers
+const camelTo = (string: string, glue: string) =>
+  string.replace(/([a-z])([A-Z])/g, (_, a, b) => a + glue + b.toLowerCase());
+
 const isFalse = (expr: string) =>
   /^(no|none|false|null|undefined|0)$/i.test(expr);
 
-const isSupported = (fileName: string) => /.(js|ts|html|s?css)$/.test(fileName);
+const isSupported = (fileName: string) => /.(js|ts)$/.test(fileName);
 
 const isTrue = (expr: string) => /^(yes|true|1)$/i.test(expr);
 
@@ -74,34 +77,40 @@ const readScript = async (folder: string, fileName: string) => {
   let startingLine: number = 0;
 
   // Script
-  if (SCRIPT_EXTS.includes(ext)) {
-    let started = false;
-    for (startingLine = 0; startingLine < lines.length; startingLine++) {
-      const line = lines[startingLine]!;
-      if (started) {
-        if (COMMENT_END.test(line)) {
-          startingLine++;
-          break;
-        }
-        const trimmed = line.replace(COMMENT_LINE, "").trim();
-        const directiveMatch = trimmed.match(DIRECTIVE);
-        if (directiveMatch) {
-          const [, name, content] = directiveMatch;
-          const dirName = name.trim() as Directive;
-          let dirValue: string | boolean = content.trim();
-          if (isFalse(dirValue)) {
-            dirValue = false;
-          } else if (isTrue(dirValue)) {
-            dirValue = true;
-          }
-          (<any>directives)[dirName] = dirValue;
-        } else {
-          title.push(trimmed);
-        }
-      } else if (COMMENT_START.test(line)) {
-        started = true;
+  let commentFound = false;
+  for (startingLine = 0; startingLine < lines.length; startingLine++) {
+    const line = lines[startingLine]!;
+    if (commentFound) {
+      if (COMMENT_END.test(line)) {
+        startingLine++;
+        break;
       }
+      const trimmed = line.replace(COMMENT_LINE, "").trim();
+      const directiveMatch = trimmed.match(DIRECTIVE);
+      if (directiveMatch) {
+        const [, name, content] = directiveMatch;
+        const dirName = name.trim() as Directive;
+        let dirValue: string | boolean = (content || "").trim();
+        if (isFalse(dirValue)) {
+          dirValue = false;
+        } else if (!dirValue.length || isTrue(dirValue)) {
+          dirValue = true;
+        }
+        (<any>directives)[dirName] = dirValue;
+      } else {
+        title.push(trimmed);
+      }
+    } else if (COMMENT_START.test(line)) {
+      commentFound = true;
     }
+  }
+  if (!commentFound) {
+    startingLine = 0;
+  }
+
+  // Default
+  if (!title.length) {
+    title.push(capitalize(camelTo(snakeTo(fileNameParts.join(" "), " "), " ")));
   }
 
   let content = lines
@@ -155,7 +164,7 @@ const readScript = async (folder: string, fileName: string) => {
     ext,
     exports,
     fileName,
-    id: fileNameParts.join(".").replace(/_/, "-"),
+    id: fileNameParts.join(".").replace(/_/g, "-"),
     minContent: result.code,
     minFileName,
     title: title.filter(filterEmpty).join(" "),
@@ -184,6 +193,11 @@ const serialize = (value: any): string => {
   }
 };
 
+const snakeTo = (string: string, glue: string) => string.replace(/_/g, glue);
+
+const capitalize = (string: string) =>
+  string[0].toUpperCase() + string.slice(1);
+
 const wrapInFE = (code: string, options: WrapperOptions = {}) => /* js */ `${
   options.async ? "async " : ""
 }() => {
@@ -207,13 +221,16 @@ const wrapInObserver = (code: string, options?: WrapperOptions) =>
   );
 
 export const getScriptInfos = async () => {
-  const scriptInfo = await Promise.all([
-    readScripts(PUBLIC_FOLDER),
-    readScripts(LOCAL_FOLDER),
-  ]);
+  const folders = [PUBLIC_FOLDER];
+  if (existsSync(LOCAL_FOLDER)) {
+    folders.push(LOCAL_FOLDER);
+  }
+  const scriptInfo = await Promise.all(folders.map(readScripts));
+  const char = (info: ScriptInfo) => (info.title[0] || "").toLowerCase();
   return scriptInfo
     .flat()
-    .sort((a, b) => (a.title > b.title ? 1 : a.title < b.title ? -1 : 0));
+    .filter((info) => !info.directives.ignore)
+    .sort((a, b) => (char(a) > char(b) ? 1 : char(a) < char(b) ? -1 : 0));
 };
 
 // Script builders
