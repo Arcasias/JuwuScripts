@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir } from "fs/promises";
+import { readFile, writeFile, mkdir, rm } from "fs/promises";
 import { existsSync } from "fs";
 import {
   buildJsScript,
@@ -39,12 +39,13 @@ const buildPopupJs = async (scriptInfos: ScriptInfo[]) => {
 };
 
 const buildScripts = async (scriptInfos: ScriptInfo[]) => {
-  if (!existsSync(BUILT_SCRIPTS_PATH)) {
-    await mkdir(BUILT_SCRIPTS_PATH);
+  if (existsSync(BUILT_SCRIPTS_PATH)) {
+    await rm(BUILT_SCRIPTS_PATH, { recursive: true });
   }
+  await mkdir(BUILT_SCRIPTS_PATH);
   await Promise.all(
-    scriptInfos.map(({ fileName, minContent }) =>
-      writeFile(join(BUILT_SCRIPTS_PATH, fileName), minContent)
+    scriptInfos.map(({ fileName, content }) =>
+      writeFile(join(BUILT_SCRIPTS_PATH, fileName), content)
     )
   );
 };

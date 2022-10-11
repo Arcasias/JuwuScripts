@@ -25,7 +25,7 @@ export interface ScriptInfo {
   ext: string;
   fileName: string;
   id: string;
-  minContent: string;
+  content: string;
   title: string;
   url: string;
 }
@@ -41,7 +41,7 @@ const DIRECTIVE = /@([\w-]+)(.*)?/;
 
 // Helpers
 const camelTo = (string: string, glue: string) =>
-  string.replace(/([a-z])([A-Z])/g, (_, a, b) => a + glue + b.toLowerCase());
+  string.replaceAll(/([a-z])([A-Z])/g, (_, a, b) => a + glue + b.toLowerCase());
 
 const isFalse = (expr: string) =>
   /^(no|none|false|null|undefined|0)$/i.test(expr);
@@ -144,15 +144,33 @@ const readScript = async (folder: string, fileName: string) => {
     }
   );
 
-  // Minify content
-  console.log("Minifying file:", fileName);
-  const result = minify(content, { warnings: "verbose" });
-  if (result.error) {
-    console.error(`> ERROR (skipping script): ->`, result.error, "\n");
-  } else if (result.warnings) {
-    console.warn(result.warnings.map((w) => `> ${w}`).join("\n"), "\n");
+  let processedContent: string;
+  if (process.env.DEBUG === "true") {
+    processedContent = content;
   } else {
-    console.log("> SUCCESS\n");
+    // Reduce XML string templates
+    content = content
+      .replaceAll(/`[\n\s\t]+/gm, "`")
+      .replaceAll(/[\n\s\t]+`/gm, "`")
+      .replaceAll(/>[\n\s\t]+/gm, ">")
+      .replaceAll(/[\n\s\t]+<\//gm, "</");
+
+    // Minify content
+    console.log("Minifying file:", fileName);
+    const result = minify(content, {
+      warnings: "verbose",
+      // Chrome seems to be a bitch about inline sourcemaps, don't know why...
+      // sourceMap: directives.run !== "clipboard" && { url: "inline" },
+    });
+    if (result.error) {
+      console.error(`> ERROR (skipping script): ->`, result.error, "\n");
+    } else if (result.warnings) {
+      console.warn(result.warnings.map((w) => `> ${w}`).join("\n"), "\n");
+    } else {
+      console.log("> SUCCESS\n");
+    }
+
+    processedContent = result.code;
   }
 
   return {
@@ -160,8 +178,8 @@ const readScript = async (folder: string, fileName: string) => {
     ext,
     exports,
     fileName,
-    id: fileNameParts.join(".").replace(/_/g, "-"),
-    minContent: result.code,
+    id: snakeTo(fileNameParts.join("."), "-"),
+    content: processedContent,
     title: title.filter(filterEmpty).join(" "),
     url,
   };
@@ -182,13 +200,13 @@ const serialize = (value: any): string => {
       .map(([k, v]) => `"${k}":${serialize(v)}`)
       .join(",")}}`;
   } else if (typeof value === "string") {
-    return `\`${value.replace(/(`|\$|\\)/g, "\\$1")}\``;
+    return `\`${value.replaceAll(/(`|\$|\\)/g, "\\$1")}\``;
   } else {
     return String(value);
   }
 };
 
-const snakeTo = (string: string, glue: string) => string.replace(/_/g, glue);
+const snakeTo = (string: string, glue: string) => string.replaceAll(/_/g, glue);
 
 const capitalize = (string: string) =>
   string[0].toUpperCase() + string.slice(1);
@@ -232,7 +250,7 @@ export const getScriptInfos = async () => {
 export const buildJsScript = (info: ScriptInfo) => {
   const relevantInfo: Partial<ScriptInfo> = { ...info };
   if (relevantInfo.directives!.run !== "clipboard") {
-    delete relevantInfo.minContent;
+    delete relevantInfo.content;
   }
   return serialize(relevantInfo);
 };

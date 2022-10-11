@@ -31,14 +31,14 @@ const getWebsiteHostname = (url) => {
 const LIST_ITEM_CLASS = "list-group-item text-bg-dark";
 
 export const Script = ({
-  script: { directives, exports, fileName, id, minContent, title, url },
+  script: { directives, exports, fileName, id, content, title, url },
   selected,
   onClick,
 }) => {
   const copyToClipboard = async () => {
-    if (minContent) {
+    if (content) {
       try {
-        await navigator.clipboard.writeText(minContent);
+        await navigator.clipboard.writeText(content);
       } catch (err) {
         setError(err);
       }
