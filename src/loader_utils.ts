@@ -21,13 +21,11 @@ type Directive = keyof Directives;
 type Exports = Record<string, "function" | "object">;
 
 export interface ScriptInfo {
-  content: string;
   directives: Directives;
   ext: string;
   fileName: string;
   id: string;
   minContent: string;
-  minFileName: string;
   title: string;
   url: string;
 }
@@ -66,7 +64,6 @@ const readScript = async (folder: string, fileName: string) => {
   const lines = scriptContent.split("\n");
   const fileNameParts = fileName.split(".");
   const ext = fileNameParts.pop()!;
-  const minFileName = [...fileNameParts, "min", ext].join(".");
   const title: string[] = [];
   const directives: Directives = {
     autorun: true,
@@ -159,14 +156,12 @@ const readScript = async (folder: string, fileName: string) => {
   }
 
   return {
-    content,
     directives,
     ext,
     exports,
     fileName,
     id: fileNameParts.join(".").replace(/_/g, "-"),
     minContent: result.code,
-    minFileName,
     title: title.filter(filterEmpty).join(" "),
     url,
   };
@@ -236,7 +231,6 @@ export const getScriptInfos = async () => {
 // Script builders
 export const buildJsScript = (info: ScriptInfo) => {
   const relevantInfo: Partial<ScriptInfo> = { ...info };
-  delete relevantInfo.content;
   if (relevantInfo.directives!.run !== "clipboard") {
     delete relevantInfo.minContent;
   }

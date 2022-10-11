@@ -31,7 +31,10 @@ const buildREADME = async (scriptInfos: ScriptInfo[]) => {
 const buildPopupJs = async (scriptInfos: ScriptInfo[]) => {
   const template = await readFile(POPUP_JS_TEMPLATE_PATH, "utf8");
   const scripts = scriptInfos.map(buildJsScript);
-  const fileContent = template.replace(jsComment("scripts"), scripts.join(","));
+  const fileContent = template.replace(
+    jsComment("scripts"),
+    scripts.join(",\n  ")
+  );
   await writeFile(POPUP_JS_PATH, fileContent);
 };
 
@@ -39,20 +42,11 @@ const buildScripts = async (scriptInfos: ScriptInfo[]) => {
   if (!existsSync(BUILT_SCRIPTS_PATH)) {
     await mkdir(BUILT_SCRIPTS_PATH);
   }
-  await Promise.all(scriptInfos.map(writeScripts));
-};
-
-const writeScripts = async (scriptInfo: ScriptInfo) => {
-  await Promise.all([
-    writeFile(
-      join(BUILT_SCRIPTS_PATH, scriptInfo.fileName),
-      scriptInfo.content
-    ),
-    writeFile(
-      join(BUILT_SCRIPTS_PATH, scriptInfo.minFileName),
-      scriptInfo.minContent
-    ),
-  ]);
+  await Promise.all(
+    scriptInfos.map(({ fileName, minContent }) =>
+      writeFile(join(BUILT_SCRIPTS_PATH, fileName), minContent)
+    )
+  );
 };
 
 // Main

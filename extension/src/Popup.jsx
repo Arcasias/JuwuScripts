@@ -2,10 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import "./Popup.scss";
 import { Script } from "./Script";
 import { SCRIPTS } from "./scripts";
-import { storage } from "./services";
-import { getClass } from "./utils";
 
-const DEBUG_KEY = "[DEBUG]";
 const SEACH_KEYS = [
   (s) => s.title,
   (s) => s.id,
@@ -70,22 +67,9 @@ export const Popup = () => {
     }
   };
 
-  const toggleDebug = async () => {
-    const previous = debug;
-    const newDebug = !debug;
-    setDebug(newDebug);
-    try {
-      await storage.sync.set({ [DEBUG_KEY]: newDebug });
-    } catch (err) {
-      setDebug(previous);
-      console.error(err);
-    }
-  };
-
   const defaultQuery = localStorage.getItem("query") || "";
 
   const inputRef = useRef(null);
-  const [debug, setDebug] = useState(false);
   const [query, setQuery] = useState(defaultQuery);
 
   const scripts = getFilteredScripts(query);
@@ -93,19 +77,6 @@ export const Popup = () => {
   const [selected, setSelected] = useState(
     scripts.length === 1 ? scripts[0].id : null
   );
-
-  // Fetch initial debug value
-  useEffect(() => {
-    const fetchDebug = async () => {
-      try {
-        const value = await storage.sync.get(DEBUG_KEY);
-        setDebug(Boolean(value[DEBUG_KEY]));
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchDebug();
-  }, []);
 
   // Disgusting hack to make the root take its actual width
   const rootRef = useRef(null);
@@ -131,23 +102,12 @@ export const Popup = () => {
           placeholder="Search script..."
           autoFocus
         />
-        <button
-          className={getClass(
-            `btn btn-sm text-${debug ? "warning" : "light"}`,
-            debug && "border-warning"
-          )}
-          title={`${debug ? "Deactivate" : "Activate"} debug mode`}
-          onClick={toggleDebug}
-        >
-          <i className="bi bi-bug-fill" />
-        </button>
       </div>
       <ul className="scripts overflow-auto mb-3 pe-2 h-100 list-group">
         {scripts.map((script) => (
           <Script
             key={script.id}
             script={script}
-            debug={debug}
             selected={selected === script.id}
             onClick={(ev) => {
               if (script.id !== selected) {

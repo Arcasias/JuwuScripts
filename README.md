@@ -37,4 +37,4 @@ I only tested this in Chrome and have no plan to release it on the Web Store.
 2. Run `npm run build`
 3. Go to Google Chrome `Settings` > `Extensions`
 4. If not already done, toggle the `Developper mode` switch on the top right
-5. Click on `Load unpacked`, select the `./extension/build` folder that was created in step 1
+5. Click on `Load unpacked`, select the `./extension` folder that was created in step 1

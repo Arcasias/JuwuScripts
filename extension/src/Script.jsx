@@ -8,7 +8,7 @@ const REPLACERS = [
   ["**", "strong"],
   ["*", "em"],
 ];
-const SCRIPTS_PATH = "./extension/scripts/";
+const SCRIPTS_PATH = "./scripts/";
 
 const formatText = (text, replacers = [...REPLACERS]) => {
   const [marker, TagName] = replacers.shift();
@@ -31,17 +31,7 @@ const getWebsiteHostname = (url) => {
 const LIST_ITEM_CLASS = "list-group-item text-bg-dark";
 
 export const Script = ({
-  script: {
-    directives,
-    exports,
-    fileName,
-    id,
-    minContent,
-    minFileName,
-    title,
-    url,
-  },
-  debug,
+  script: { directives, exports, fileName, id, minContent, title, url },
   selected,
   onClick,
 }) => {
@@ -65,7 +55,7 @@ export const Script = ({
       });
       await scripting.executeScript({
         target: { tabId: tab.id },
-        files: [SCRIPTS_PATH + (debug ? fileName : minFileName)],
+        files: [SCRIPTS_PATH + fileName],
         world: "MAIN",
       });
     } catch (err) {
@@ -100,7 +90,7 @@ export const Script = ({
     try {
       if (activate) {
         await storage.sync.set({
-          [id]: { fileName, hostName, id, minFileName },
+          [id]: { fileName, hostName, id },
         });
       } else {
         await storage.sync.remove(id);

@@ -2,22 +2,15 @@
 const { scripting, storage, tabs } = globalThis.browser || globalThis.chrome;
 
 const BLACKLISTED_URL = /^(chrome|file):\/\//i;
-const DEBUG_KEY = "[DEBUG]";
-const SCRIPTS_PATH = "./extension/scripts/";
+const SCRIPTS_PATH = "./scripts/";
 
 const onPageLoad = async ({ url, id }) => {
   let storageScripts = {};
-  let debug = false;
 
   try {
     storageScripts = await storage.sync.get();
   } catch (err) {
     return console.error(`Error while fetching storage for url "${url}"`, err);
-  }
-
-  if (DEBUG_KEY in storageScripts) {
-    debug = storageScripts[DEBUG_KEY];
-    delete storageScripts[DEBUG_KEY];
   }
 
   const scripts = Object.values(storageScripts).filter(
@@ -30,9 +23,7 @@ const onPageLoad = async ({ url, id }) => {
   try {
     await scripting.executeScript({
       target: { tabId: id },
-      files: scripts.map(
-        (s) => SCRIPTS_PATH + (debug ? s.fileName : s.minFileName)
-      ),
+      files: scripts.map((s) => SCRIPTS_PATH + s.fileName),
       world: "MAIN",
     });
   } catch (err) {

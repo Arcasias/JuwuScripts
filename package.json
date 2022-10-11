@@ -1,7 +1,7 @@
 {
   "name": "scripts",
   "version": "1.0.0",
-  "description": "Here is a list of QoL scripts that I use to run accross the web. Feel free to use them.",
+  "description": "Collection of QoL and quirky scripts. Feel free to use them.",
   "main": "./src/loader.ts",
   "scripts": {
     "build:prettier": "prettier --write \"./src/**/*.{js,ts}\"",

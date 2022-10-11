@@ -4,11 +4,11 @@
   "version": "0.1",
   "manifest_version": 3,
   "background": {
-    "service_worker": "extension/background.js"
+    "service_worker": "./background.js"
   },
   "permissions": ["background", "activeTab", "tabs", "scripting", "storage"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "action": {
-    "default_popup": "./extension/build/index.html"
+    "default_popup": "./build/index.html"
   }
 }
