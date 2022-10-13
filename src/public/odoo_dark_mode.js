@@ -1,5 +1,5 @@
 /**
- * Odoo dark mode
+ * Dark mode
  *
  * @description Forces dark mode on odoo.
  * @use on an Odoo16+ environment

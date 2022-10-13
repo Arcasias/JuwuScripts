@@ -1,5 +1,5 @@
 /**
- * Odoo auto login
+ * Auto login
  *
  * @description Adds options to the Odoo backend login screen to login as admin, user or portal in a single click.
  * @use on any Odoo environment.

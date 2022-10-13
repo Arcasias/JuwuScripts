@@ -8,14 +8,14 @@ You can [build and use](#chrome-extension) the integrated Chrome extension to ha
 
 ## <a name="index"></a> Index
 
+- [Auto login](https://github.com/Arcasias/scripts/blob/master/src/public/odoo_login.js)
 - [Cross-reload timer](https://github.com/Arcasias/scripts/blob/master/src/public/timer.js)
+- [Dark mode](https://github.com/Arcasias/scripts/blob/master/src/public/odoo_dark_mode.js)
+- [Environment](https://github.com/Arcasias/scripts/blob/master/src/public/odoo_env.js)
 - [Global scanner](https://github.com/Arcasias/scripts/blob/master/src/public/glob_scanner.js)
 - [Hexadecimal to RGB and vice-versa](https://github.com/Arcasias/scripts/blob/master/src/public/color_operations.js)
 - [Mouse position](https://github.com/Arcasias/scripts/blob/master/src/public/mouse.js)
 - [Netflix & Do nothing](https://github.com/Arcasias/scripts/blob/master/src/public/lazy_netflix.js)
-- [Odoo dark mode](https://github.com/Arcasias/scripts/blob/master/src/public/odoo_dark_mode.js)
-- [Odoo environment](https://github.com/Arcasias/scripts/blob/master/src/public/odoo_env.js)
-- [Odoo auto login](https://github.com/Arcasias/scripts/blob/master/src/public/odoo_login.js)
 - [Run away](https://github.com/Arcasias/scripts/blob/master/src/public/runaway.js)
 - [Remove YouTube suggestion cards](https://github.com/Arcasias/scripts/blob/master/src/public/youtube_cards.js)
 - [Shana Project 1080p](https://github.com/Arcasias/scripts/blob/master/src/public/shana.js)

@@ -9,12 +9,32 @@ const SEACH_KEYS = [
   (s) => s.directives.description || "",
 ];
 
-const getFilteredScripts = (query) =>
-  SCRIPTS.filter(
+const processScripts = (query) => {
+  const filteredScripts = SCRIPTS.filter(
     (s) =>
       !query ||
       SEACH_KEYS.some((getKey) => normalize(getKey(s)).includes(query))
   );
+
+  const groups = {};
+  const scripts = [];
+  for (const script of filteredScripts) {
+    const groupName = script.directives.group;
+    if (!groupName) {
+      scripts.push(script);
+      continue;
+    }
+    if (!(groupName in groups)) {
+      groups[groupName] = {
+        name: groupName,
+        scripts: [],
+      };
+    }
+    groups[groupName].scripts.push(script);
+  }
+
+  return [scripts, Object.values(groups)];
+};
 
 const normalize = (str, condensed = false) =>
   str
@@ -61,9 +81,17 @@ export const Popup = () => {
     const newQuery = normalize(ev.target.value);
     setQuery(newQuery);
     localStorage.setItem("query", newQuery);
-    const nextScripts = getFilteredScripts(newQuery);
+    const [nextScripts, nextGroups] = processScripts(newQuery);
     if (nextScripts.length === 1) {
+      // Select first script
       setSelected(nextScripts[0].id);
+    } else if (
+      nextScripts.length === 0 &&
+      nextGroups.length === 1 &&
+      nextGroups[0].scripts.length === 1
+    ) {
+      // Select first script of first group
+      setSelected(nextGroups[0].scripts[0].id);
     }
   };
 
@@ -72,8 +100,9 @@ export const Popup = () => {
   const inputRef = useRef(null);
   const [query, setQuery] = useState(defaultQuery);
 
-  const scripts = getFilteredScripts(query);
+  const [scripts, groups] = processScripts(query);
 
+  const [folded, setFolded] = useState([]);
   const [selected, setSelected] = useState(
     scripts.length === 1 ? scripts[0].id : null
   );
@@ -84,6 +113,30 @@ export const Popup = () => {
     rootRef.current.setAttribute("style", "width:0px");
     setTimeout(() => rootRef.current.removeAttribute("style"));
   }, []);
+
+  const displayScripts = (scripts) =>
+    scripts.map((script) => (
+      <Script
+        key={script.id}
+        script={script}
+        selected={selected === script.id}
+        onClick={(ev) => {
+          if (script.id !== selected) {
+            const target = ev.currentTarget;
+            setTimeout(() => target.scrollIntoView({ block: "center" }));
+          }
+          setSelected(script.id);
+        }}
+      />
+    ));
+
+  const toggleFold = (gname) => {
+    if (folded.includes(gname)) {
+      setFolded(folded.filter((f) => f !== gname));
+    } else {
+      setFolded([...folded, gname]);
+    }
+  };
 
   return (
     <main
@@ -104,20 +157,23 @@ export const Popup = () => {
         />
       </div>
       <ul className="scripts overflow-auto mb-3 pe-2 h-100 list-group">
-        {scripts.map((script) => (
-          <Script
-            key={script.id}
-            script={script}
-            selected={selected === script.id}
-            onClick={(ev) => {
-              if (script.id !== selected) {
-                const target = ev.currentTarget;
-                setTimeout(() => target.scrollIntoView({ block: "center" }));
-              }
-              setSelected(script.id);
-            }}
-          />
+        {groups.map((group) => (
+          <>
+            <h6
+              key={group.name}
+              className="list-group-item text-warning bg-dark m-0 d-flex"
+              style={{ cursor: "pointer", opacity: 0.8 }}
+              onClick={() => toggleFold(group.name)}
+            >
+              <span>{group.name}</span>
+              <span className="ms-auto">
+                <i className={`bi bi-caret-${folded.includes(group.name) ? "down" : "up"}-fill`} />
+              </span>
+            </h6>
+            {!folded.includes(group.name) && displayScripts(group.scripts)}
+          </>
         ))}
+        {displayScripts(scripts)}
         {!scripts.length && (
           <em className="list-group-item bg-dark text-muted">
             No result for "{query}"

@@ -1,5 +1,5 @@
 /**
- * Odoo environment
+ * Environment
  *
  * @description Logs several informations about the current Odoo environment, and adds `odoo.session` and `owl.root` variables.
  * @use on any Odoo environment.

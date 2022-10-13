@@ -133,6 +133,7 @@ export const Script = ({
     <li
       className={getClass(
         "Script text-bg-dark",
+        directives.group && "ps-5",
         selected
           ? "card selected border-primary my-2"
           : "list-group-item border-0"

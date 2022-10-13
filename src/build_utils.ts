@@ -11,6 +11,7 @@ interface Directives {
   website?: string;
   wrapper: "iife" | "observer" | false;
   requires?: string;
+  group?: string;
   ignore?: boolean;
 }
 
