@@ -10,6 +10,7 @@ interface Directives {
   run: "clipboard" | boolean;
   website?: string;
   wrapper: "iife" | "observer" | false;
+  requires?: string;
   ignore?: boolean;
 }
 
@@ -115,6 +116,12 @@ const readScript = async (folder: string, fileName: string) => {
     .filter(filterEmpty)
     .map(cleanLine)
     .join("\n");
+
+  // Add requirements
+  if (directives.requires) {
+    const reqs = directives.requires.split(".").map((r) => `["${r}"]`);
+    content = [`if (!window${reqs.join("")}) return;`, content].join("\n");
+  }
 
   // Wrap content
   const wrapperOptions = {
