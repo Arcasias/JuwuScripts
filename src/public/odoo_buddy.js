@@ -10,6 +10,7 @@ if (!window.odoo) {
 }
 
 const { odoo, owl, location } = window;
+const ONE_YEAR = 1e3 * 60 * 60 * 24 * 365;
 
 // Console infos + getters
 if (!odoo.__OB_PATCH__) {
@@ -154,6 +155,16 @@ if (
         if (user) {
           setUser(user);
         }
+
+        // Automatically set dark mode on login (if set in users preferences)
+        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+          document.cookie = [
+            "color_scheme=dark",
+            "path=/",
+            `max-age=${ONE_YEAR}`,
+          ].join(";");
+        }
+
         form.submit();
       });
     });
