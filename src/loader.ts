@@ -20,7 +20,9 @@ const BUILT_SCRIPTS_PATH = "./extension/scripts";
 
 const buildREADME = async (scriptInfos: ScriptInfo[]) => {
   const template = await readFile(README_TEMPLATE_PATH, "utf8");
-  const indexEntries = scriptInfos.map(buildMdIndexEntry);
+  const indexEntries = scriptInfos
+    .filter((info) => info.url) // Only considers public scripts in the README
+    .map(buildMdIndexEntry);
   const fileContent = template.replace(
     mdComment("scripts"),
     indexEntries.join("\n")
