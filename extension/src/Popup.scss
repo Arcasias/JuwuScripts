@@ -2,6 +2,13 @@
   width: 360px;
   max-height: 500px;
 
+  .btn {
+    &:not(.background-transition) {
+      transition: color 0.15s ease-in-out, border-color 0.15s ease-in-out,
+        box-shadow 0.15s ease-in-out;
+    }
+  }
+
   .script-group-name {
     cursor: pointer;
     opacity: 0.8;

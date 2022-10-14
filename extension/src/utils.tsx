@@ -1,7 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
+import { browser } from "./browser";
+
+export interface ThemeState {
+  theme: Theme;
+}
+
+export interface ThemeStateActions {
+  getThemeClass: (...classNames: any[]) => string;
+  isTheme: (theme: Theme) => boolean;
+  setTheme: (theme: Theme) => void;
+}
 
 export type ErrorCatcher<T> = [T, null] | [null, Error];
 export type Exports = Record<string, "function" | "object">;
+export type Theme = "dark" | "light";
 
 export const catchAsyncError = async <T = true,>(
   fn: (...args: any[]) => Promise<T>
@@ -33,11 +45,11 @@ export const copyToClipboard = async (text?: string) =>
 
 export const executeScript = async (fileName: string) =>
   catchAsyncError(async () => {
-    const [tab] = await tabs.query({
+    const [tab] = await browser.tabs.query({
       active: true,
       currentWindow: true,
     });
-    await scripting.executeScript({
+    await browser.scripting.executeScript({
       target: { tabId: tab.id },
       files: [SCRIPTS_PATH + fileName],
       world: "MAIN",
@@ -58,6 +70,9 @@ export const formatText = (text: string, replacers = [...REPLACERS]) => {
 
 export const getClass = (...classNames: any[]) =>
   classNames.filter(Boolean).join(" ");
+
+export const getDefaultTheme = (): Theme =>
+  window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 
 export const getGithubURL = (...path: string[]) =>
   [GITHUB_URL, ...path].join("/");
@@ -81,13 +96,13 @@ export const normalize = (str: string, condensed: boolean = false) =>
     .replace(condensed ? /[^a-z0-9]/g : /[\u0300-\u036f]/g, "");
 
 export const storageGet = async (...keys: string[]) =>
-  catchAsyncError<Record<string, any>>(() => storage.sync.get(...keys));
+  catchAsyncError<Record<string, any>>(() => browser.storage.sync.get(...keys));
 
 export const storageRemove = async (...keys: string[]) =>
-  catchAsyncError(() => storage.sync.remove(...keys));
+  catchAsyncError(() => browser.storage.sync.remove(...keys));
 
 export const storageSet = async (values: Record<string, any>) =>
-  catchAsyncError(() => storage.sync.set(values));
+  catchAsyncError(() => browser.storage.sync.set(values));
 
 const REPLACERS: [string, any][] = [
   ["`", "code"],
@@ -98,8 +113,31 @@ const REPLACERS: [string, any][] = [
 // String constants
 export const GITHUB_URL = "https://github.com/Arcasias/scripts/blob/master";
 export const SCRIPTS_PATH = "./scripts/";
-export const LIST_ITEM_CLASS = "list-group-item text-bg-dark";
+export const THEME_STORAGE_KEY = "[THEME]";
 
-// Service keys
-const { scripting, storage, tabs } =
-  (window as any).browser || (window as any).chrome;
+// ThemeState
+const themeState: ThemeState = { theme: getDefaultTheme() };
+const themeSetStates: React.Dispatch<React.SetStateAction<ThemeState>>[] = [];
+export const useTheme = (): ThemeStateActions => {
+  const [state, setState] = useState(themeState);
+  themeSetStates.push(setState);
+  return {
+    getThemeClass: (...classNames: string[]) =>
+      getClass(...classNames, state.theme === "dark" && "text-bg-dark"),
+    isTheme(theme) {
+      return theme === state.theme;
+    },
+    setTheme: (theme) => {
+      if (theme === state.theme) {
+        return;
+      }
+      theme ||= getDefaultTheme();
+      themeState.theme = theme;
+      document.body.className = theme + "-theme";
+      for (const setState of themeSetStates) {
+        setState({ theme });
+      }
+      storageSet({ [THEME_STORAGE_KEY]: theme });
+    },
+  };
+};

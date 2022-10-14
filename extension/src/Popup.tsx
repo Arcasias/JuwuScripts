@@ -4,8 +4,11 @@ import { ScriptInfo, scripts as ALL_SCRIPTS } from "./scripts";
 import {
   getClass,
   groupNameFromPath,
-  LIST_ITEM_CLASS,
   normalize,
+  storageGet,
+  storageSet,
+  THEME_STORAGE_KEY,
+  useTheme,
 } from "./utils";
 
 import { KeyboardEventHandler } from "react";
@@ -153,6 +156,7 @@ export const Popup = () => {
     groups
   );
 
+  const { getThemeClass, isTheme, setTheme } = useTheme();
   const [selected, setSelected] = useState(defaultSelectedScript);
   const [openGroups, setOpenGroups] = useState(
     defaultOpenGroup ? [defaultOpenGroup] : []
@@ -165,16 +169,31 @@ export const Popup = () => {
     setTimeout(() => rootRef.current?.removeAttribute("style"));
   }, []);
 
+  // Get current or default theme
+  useEffect(() => {
+    const fetchTheme = async () => {
+      const [result, error] = await storageGet(THEME_STORAGE_KEY);
+      if (error) {
+        console.debug(error);
+      } else {
+        const value = result[THEME_STORAGE_KEY];
+        setTheme(value);
+      }
+    };
+    fetchTheme();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <main
       ref={rootRef}
-      className="Popup container-lg d-flex flex-column m-0 text-bg-dark"
+      className={getThemeClass("Popup container-lg d-flex flex-column m-0")}
       onKeyDown={navigate}
     >
-      <div className="input-group my-3">
+      <div className={getClass("input-group my-3 shadow")}>
         <input
           ref={inputRef}
-          className="form-control text-bg-dark"
+          className={getThemeClass("form-control border-0")}
           type="search"
           name="search"
           value={query}
@@ -182,16 +201,21 @@ export const Popup = () => {
           placeholder="Search script..."
           autoFocus
         />
+        <button
+          className={getThemeClass("btn")}
+          onClick={() => setTheme(isTheme("light") ? "dark" : "light")}
+          title="Toggle theme"
+        >
+          <i className={`bi bi-${isTheme("dark") ? "sun" : "moon"}-fill`} />
+        </button>
       </div>
       <ul className="scripts overflow-auto pe-1 mb-3 h-100 list-group">
         {groups.map((group) => (
-          <>
+          <React.Fragment key={group.name}>
             <h6
-              key={group.name}
-              className={getClass(
-                "script-group-name m-0 d-flex animation-slide-right",
-                LIST_ITEM_CLASS,
-                openGroups.includes(group.name) ? "text-warning" : "text-light"
+              className={getThemeClass(
+                "script-group-name list-group-item ps-2 m-0 border-0 d-flex animation-slide-right",
+                openGroups.includes(group.name) && "text-warning"
               )}
               onClick={() => toggleFold(group.name)}
             >
@@ -209,15 +233,15 @@ export const Popup = () => {
               </span>
             </h6>
             {openGroups.includes(group.name) && (
-              <div className="animation-slide-down ps-4">
+              <div className="animation-slide-down ps-3">
                 {displayScripts(group.scripts)}
               </div>
             )}
-          </>
+          </React.Fragment>
         ))}
         {displayScripts(scripts)}
         {!scripts.length && !groups.length && (
-          <em className="list-group-item bg-dark text-muted">
+          <em className={getThemeClass("list-group-item text-muted")}>
             No result for "{query}"
           </em>
         )}

@@ -10,10 +10,10 @@ import {
   getWebsiteHostname,
   isLocal,
   isURL,
-  LIST_ITEM_CLASS,
   storageGet,
   storageRemove,
   storageSet,
+  useTheme,
 } from "./utils";
 
 import "./Script.scss";
@@ -87,6 +87,8 @@ export const Script = ({
     image = directives.website + "favicon.ico";
   }
 
+  const { getThemeClass } = useTheme();
+
   useEffect(() => {
     const fetchAutorun = async () => {
       const [result, error] = await storageGet(id);
@@ -106,12 +108,11 @@ export const Script = ({
 
   return (
     <li
-      className={getClass(
-        "Script text-bg-dark animation-slide-right",
+      className={getThemeClass(
+        "Script animation-slide-right border-0",
         selected
-          ? "card selected border-primary my-2"
-          : "list-group-item border-0",
-        (image || directives.icon) && "ps-1"
+          ? "card selected my-2 shadow"
+          : getClass("list-group-item", (image || directives.icon) && "ps-1")
       )}
       tabIndex={0}
       onClick={(ev) => onClick(ev.target as HTMLElement)}
@@ -148,11 +149,9 @@ export const Script = ({
           <div className="ms-auto btn-group">
             {directives.run && !autorun && (
               <button
-                className={getClass(
-                  `btn border-0 p-0 ps-1 text-${
-                    runCount > 0 ? "success" : "light"
-                  }`,
-                  runCount > 0 && "animation-grow"
+                className={getThemeClass(
+                  "btn border-0 p-0 ps-1",
+                  runCount > 0 && "text-success animation-grow"
                 )}
                 onClick={(ev) => {
                   ev.stopPropagation();
@@ -167,9 +166,9 @@ export const Script = ({
             )}
             {!isClipboard && directives.autorun && (
               <button
-                className={getClass(
-                  `btn border-0 p-0 px-1 text-${autorun ? "info" : "light"}`,
-                  autorun && "animation-spin"
+                className={getThemeClass(
+                  "btn border-0 p-0 px-1",
+                  autorun && "text-info animation-spin"
                 )}
                 onClick={(ev) => {
                   ev.stopPropagation();
@@ -197,7 +196,7 @@ export const Script = ({
       {selected && (
         <ul className="border-0 list-group list-group-flush">
           {directives.website && (
-            <li className={LIST_ITEM_CLASS}>
+            <li className={getThemeClass("list-group-item")}>
               <div className="badge rounded-pill text-bg-secondary me-2">
                 website
               </div>
@@ -212,7 +211,7 @@ export const Script = ({
             </li>
           )}
           {directives.use && (
-            <li className={LIST_ITEM_CLASS}>
+            <li className={getThemeClass("list-group-item")}>
               <div className="badge rounded-pill text-bg-secondary me-2">
                 use
               </div>
@@ -220,7 +219,7 @@ export const Script = ({
             </li>
           )}
           {Object.entries(exports).map(([key, type]) => (
-            <li key={key} className={`${LIST_ITEM_CLASS}`}>
+            <li key={key} className={getThemeClass("list-group-item")}>
               <div className="badge rounded-pill text-bg-secondary me-2">
                 exports
               </div>
@@ -229,7 +228,9 @@ export const Script = ({
           ))}
           {error && (
             <li
-              className={`${LIST_ITEM_CLASS} d-flex align-items-center justify-content-between`}
+              className={getThemeClass(
+                "list-group-item d-flex align-items-center justify-content-between"
+              )}
             >
               <em className="text-danger me-2">Error: check the console</em>
               <button
