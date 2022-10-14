@@ -101,7 +101,7 @@ export const Script = ({
   return (
     <li
       className={getClass(
-        "Script text-bg-dark",
+        "Script text-bg-dark animation-slide-right",
         selected
           ? "card selected border-primary my-2"
           : "list-group-item border-0"
@@ -135,7 +135,7 @@ export const Script = ({
                   `btn border-0 p-0 ps-1 text-${
                     runCount > 0 ? "success" : "light"
                   }`,
-                  runCount > 0 && "grow"
+                  runCount > 0 && "animation-grow"
                 )}
                 onClick={(ev) => {
                   ev.stopPropagation();
@@ -152,7 +152,7 @@ export const Script = ({
               <button
                 className={getClass(
                   `btn border-0 p-0 px-1 text-${autorun ? "info" : "light"}`,
-                  autorun && "spin"
+                  autorun && "animation-spin"
                 )}
                 onClick={(ev) => {
                   ev.stopPropagation();

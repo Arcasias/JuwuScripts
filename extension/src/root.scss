@@ -1,0 +1,72 @@
+@keyframes grow {
+  from {
+    opacity: 0.5;
+    transform: scale(0.5);
+  }
+}
+
+@keyframes slide-down {
+  from {
+    margin-top: -1rem;
+    opacity: 0.2;
+  }
+}
+
+@keyframes slide-right {
+  from {
+    margin-left: -1rem;
+    opacity: 0.2s;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animation-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animation-grow {
+  animation: grow 1s;
+}
+
+.animation-slide-down {
+  animation: slide-down 0.15s;
+}
+
+.animation-slide-right {
+  animation: slide-right 0.15s;
+}
+
+:root {
+  --bs-primary: #1888ff;
+  --bs-link-color: var(--bs-primary);
+  --bs-success: #20c060;
+  --bs-info: #40e0ff;
+  --bs-primary-rgb: 24, 136, 255;
+  --bs-success-rgb: 32, 192, 96;
+  --bs-info-rgb: 64, 224, 255;
+}
+
+::-webkit-scrollbar {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: inherit;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bs-gray-800);
+  border-radius: 100rem;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bs-gray-700);
+  border-radius: 100rem;
+
+  &:hover {
+    background: var(--bs-gray-600);
+  }
+}

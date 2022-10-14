@@ -1,22 +1,5 @@
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes grow {
-  0% {
-    opacity: 0.5;
-    transform: scale(0.5);
-  }
-  50% {
-    opacity: 1;
-    transform: none;
-  }
-}
-
 .Script {
-  transition: border 0.15s;
+  transition: border 0.15s, margin 0.15s;
 
   &:hover {
     .script-title {
@@ -49,13 +32,5 @@
     .script-details {
       display: block;
     }
-  }
-
-  .spin {
-    animation: spin 1s linear infinite;
-  }
-
-  .grow {
-    animation: grow 1s;
   }
 }

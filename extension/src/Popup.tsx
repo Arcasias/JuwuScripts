@@ -16,10 +16,11 @@ interface Group {
   scripts: ScriptInfo[];
 }
 
-const SEACH_KEYS = [
-  (s: ScriptInfo) => s.title,
-  (s: ScriptInfo) => s.id,
-  (s: ScriptInfo) => s.directives.description || "",
+const SEACH_KEYS: ((script: ScriptInfo) => string)[] = [
+  (s) => s.title,
+  (s) => s.id,
+  (s) => s.path.join(" "),
+  (s) => s.directives.description || "",
 ];
 
 const getDefaultState = (
@@ -28,13 +29,15 @@ const getDefaultState = (
 ): [string | null, string | null] => {
   let defaultSelected: string | null = null;
   let defaultOpenGroup: string | null = null;
-  if (scripts.length === 1) {
+  if (scripts.length === 1 && groups.length === 0) {
     const [firstScript] = scripts;
     defaultSelected = firstScript.id;
   } else if (scripts.length === 0 && groups.length === 1) {
     const { name, scripts } = groups[0];
-    defaultSelected = scripts[0].id;
     defaultOpenGroup = name;
+    if (scripts.length === 1) {
+      defaultSelected = scripts[0].id;
+    }
   }
 
   return [defaultSelected, defaultOpenGroup];
@@ -81,7 +84,7 @@ export const Popup = () => {
     ));
 
   const navigate: KeyboardEventHandler = (ev) => {
-    if (!scripts.length || !rootRef.current) {
+    if ((!scripts.length && !groups.length) || !rootRef.current) {
       return;
     }
     const scriptEls = [...rootRef.current.querySelectorAll(".Script")];
@@ -180,15 +183,14 @@ export const Popup = () => {
           autoFocus
         />
       </div>
-      <ul className="scripts overflow-auto mb-3 pe-2 h-100 list-group">
+      <ul className="scripts overflow-auto pe-1 mb-3 h-100 list-group">
         {groups.map((group) => (
           <>
             <h6
               key={group.name}
               className={getClass(
-                "script-group-name",
+                "script-group-name m-0 d-flex animation-slide-right",
                 LIST_ITEM_CLASS,
-                "m-0 d-flex",
                 openGroups.includes(group.name) ? "text-warning" : "text-light"
               )}
               onClick={() => toggleFold(group.name)}
@@ -197,16 +199,19 @@ export const Popup = () => {
                 <i className="bi bi-folder-fill" />
               </span>
               <span>{group.name}</span>
-              <span className="ms-auto">
-                <i
-                  className={`bi bi-caret-${
-                    openGroups.includes(group.name) ? "up" : "down"
-                  }-fill`}
-                />
+              <span
+                className={getClass(
+                  "ms-auto script-group-caret d-flex align-items-center",
+                  openGroups.includes(group.name) && "upside-down"
+                )}
+              >
+                <i className="bi bi-caret-down-fill" />
               </span>
             </h6>
             {openGroups.includes(group.name) && (
-              <div className="script-group-content ps-4">{displayScripts(group.scripts)}</div>
+              <div className="animation-slide-down ps-4">
+                {displayScripts(group.scripts)}
+              </div>
             )}
           </>
         ))}
