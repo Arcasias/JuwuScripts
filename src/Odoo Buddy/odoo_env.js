@@ -4,6 +4,7 @@
  * @description Logs several informations about the current Odoo environment, and adds `odoo.session` and `owl.root` variables.
  * @use on any Odoo environment.
  * @requires odoo
+ * @image https://www.odoo.com/favicon.ico
  */
 
 const { odoo, owl, location } = window;

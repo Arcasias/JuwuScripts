@@ -4,6 +4,7 @@
  * @description Adds options to the Odoo backend login screen to login as admin, user or portal in a single click.
  * @use on any Odoo environment.
  * @requires odoo
+ * @image https://www.odoo.com/favicon.ico
  */
 
 const { odoo, location } = window;

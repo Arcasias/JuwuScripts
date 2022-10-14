@@ -21,7 +21,7 @@
       "ESNext.String",
       "ESNext.Symbol"
     ],
-    "rootDir": "."
+    "rootDir": "src"
   },
   "exclude": ["node_modules"]
 }

@@ -9,6 +9,7 @@ import {
   getGithubURL,
   getWebsiteHostname,
   isLocal,
+  isURL,
   LIST_ITEM_CLASS,
   storageGet,
   storageRemove,
@@ -81,6 +82,11 @@ export const Script = ({
   const hostName =
     (directives.website && getWebsiteHostname(directives.website)) || false;
 
+  let { image } = directives;
+  if (!image && directives.website) {
+    image = directives.website + "favicon.ico";
+  }
+
   useEffect(() => {
     const fetchAutorun = async () => {
       const [result, error] = await storageGet(id);
@@ -104,7 +110,8 @@ export const Script = ({
         "Script text-bg-dark animation-slide-right",
         selected
           ? "card selected border-primary my-2"
-          : "list-group-item border-0"
+          : "list-group-item border-0",
+        (image || directives.icon) && "ps-1"
       )}
       tabIndex={0}
       onClick={(ev) => onClick(ev.target as HTMLElement)}
@@ -120,9 +127,19 @@ export const Script = ({
             !selected && "m-0"
           )}
         >
-          {directives.icon && (
-            <span className="me-2">
-              <i className={`bi ${directives.icon}`} />
+          {(image || directives.icon) && (
+            <span className="me-2 d-flex">
+              {image ? (
+                <img
+                  className="mh-100 w-auto"
+                  width={16}
+                  height={16}
+                  src={isURL(image) ? image : require(`./img/${image}`)}
+                  alt={image}
+                />
+              ) : (
+                <i className={`bi ${directives.icon}`} />
+              )}
             </span>
           )}
           <span className="text-truncate w-100" title={title}>

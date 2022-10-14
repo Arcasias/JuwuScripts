@@ -3,7 +3,7 @@ import { createWriteStream } from "fs";
 import { join } from "path";
 
 const EXPORTED_FILES = ["manifest.json", "background.js"];
-const EXPORTED_FOLDERS = ["build", "scripts"];
+const EXPORTED_FOLDERS = ["build", "img", "scripts"];
 const SOURCE_DIR = "./extension";
 const TARGET_FILE = "./extension.zip";
 

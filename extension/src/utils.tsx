@@ -72,6 +72,8 @@ export const getWebsiteHostname = (url: string) => {
 
 export const isLocal = (path: string[]) => path.includes("local");
 
+export const isURL = (url: string) => /^https?:\/\//.test(url);
+
 export const normalize = (str: string, condensed: boolean = false) =>
   str
     .toLowerCase()

@@ -3,6 +3,7 @@ export interface Directives {
   description?: string;
   icon?: string;
   ignore?: boolean;
+  image?: string;
   use?: string;
   requires?: string;
   run: "clipboard" | boolean;

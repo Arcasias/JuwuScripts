@@ -19,9 +19,9 @@ You can [build and use](#chrome-extension) the integrated Chrome extension to ha
 - [Run away](https://github.com/Arcasias/scripts/blob/master/src/runaway.js)
 - [Remove YouTube suggestion cards](https://github.com/Arcasias/scripts/blob/master/src/youtube_cards.js)
 - [Shana Project 1080p](https://github.com/Arcasias/scripts/blob/master/src/shana.js)
-- [Storage analyzer](https://github.com/Arcasias/scripts/blob/master/src/storage_analyzer.js)
 - [Spongebobify](https://github.com/Arcasias/scripts/blob/master/src/spongebobify.js)
-- [Storage cleaner](https://github.com/Arcasias/scripts/blob/master/src/storage_cleaner.js)
+- [Storage analyzer](https://github.com/Arcasias/scripts/blob/master/src/Storage/storage_analyzer.js)
+- [Storage cleaner](https://github.com/Arcasias/scripts/blob/master/src/Storage/storage_cleaner.js)
 
 ## <a name="how-to-use"></a> How to use
 
