@@ -1,41 +1,29 @@
-import { existsSync } from "fs";
-import { readdir, readFile } from "fs/promises";
+import { existsSync, statSync } from "fs";
+import { mkdir, readdir, readFile, rm, writeFile } from "fs/promises";
 import { join } from "path";
 import { minify } from "uglify-js";
-
-interface Directives {
-  description?: string;
-  use?: string;
-  autorun: boolean;
-  run: "clipboard" | boolean;
-  website?: string;
-  wrapper: "iife" | "observer" | false;
-  requires?: string;
-  group?: string;
-  ignore?: boolean;
-}
+import { Directives, Exports, ScriptInfo } from "./templates/scripts";
 
 interface WrapperOptions {
   async?: boolean;
 }
 
-type Directive = keyof Directives;
-type Exports = Record<string, "function" | "object">;
+type ScriptBuildInfo = ScriptInfo & { content: string };
 
-export interface ScriptInfo {
-  directives: Directives;
-  ext: string;
-  fileName: string;
-  id: string;
-  content: string;
-  title: string;
-  url: string;
-}
+// Paths
+const README_TEMPLATE_PATH = "./templates/README.md";
+const README_PATH = "./README.md";
 
-const PUBLIC_FOLDER = "src/public";
-const LOCAL_FOLDER = "src/local";
+const POPUP_JS_TEMPLATE_PATH = "./templates/scripts.ts";
+const POPUP_JS_PATH = "./extension/src/scripts.ts";
+
+const BUILT_SCRIPTS_PATH = "./extension/scripts";
+
+// String constants
+const ROOT_PATH = "src";
 const GITHUB_URL = "https://github.com/Arcasias/scripts/blob/master";
 
+// Regular expressions
 const COMMENT_START = /^\s*\/\*/;
 const COMMENT_LINE = /^\s*\*/;
 const COMMENT_END = /\*\/\s*$/;
@@ -45,24 +33,42 @@ const DIRECTIVE = /@([\w-]+)(.*)?/;
 const camelTo = (string: string, glue: string) =>
   string.replaceAll(/([a-z])([A-Z])/g, (_, a, b) => a + glue + b.toLowerCase());
 
+const capitalize = (string: string) =>
+  string[0].toUpperCase() + string.slice(1);
+
+const cleanLine = (line: string) => line.replaceAll(/[\r\n]+/g, "");
+
+const getScriptInfos = async () => {
+  const scriptInfo: ScriptBuildInfo[] = [];
+  await readScripts(ROOT_PATH, scriptInfo);
+  const char = (info: ScriptBuildInfo) => (info.title[0] || "").toLowerCase();
+  return scriptInfo.sort((a, b) =>
+    char(a) > char(b) ? 1 : char(a) < char(b) ? -1 : 0
+  );
+};
+
+const getScriptURL = ({ fileName, path }: ScriptBuildInfo) =>
+  [GITHUB_URL, ...path, fileName].join("/");
+
 const isFalse = (expr: string) =>
   /^(no|none|false|null|undefined|0)$/i.test(expr);
 
-const isSupported = (fileName: string) => /.(js|ts)$/.test(fileName);
+const isScriptFile = (fileName: string) => /.(js|ts)$/.test(fileName);
 
 const isTrue = (expr: string) => /^(yes|true|1)$/i.test(expr);
+
+const jsComment = (comment: string) => `/* ${comment} */`;
 
 const filterEmpty = (line?: string) =>
   line?.length && !/^[\s\r\n]+$/.test(line);
 
-const cleanLine = (line: string) => line.replaceAll(/[\r\n]+/g, "");
+const mdComment = (comment: string) => `<!-- ${comment} -->`;
 
-const readScript = async (folder: string, fileName: string) => {
-  const url =
-    folder === PUBLIC_FOLDER
-      ? [GITHUB_URL, PUBLIC_FOLDER, fileName].join("/")
-      : "";
-  const scriptContent = await readFile(join(folder, fileName), "utf8");
+const readScript = async (
+  path: string,
+  fileName: string
+): Promise<ScriptBuildInfo> => {
+  const scriptContent = await readFile(join(path, fileName), "utf8");
   const lines = scriptContent.split("\n");
   const fileNameParts = fileName.split(".");
   const ext = fileNameParts.pop()!;
@@ -88,7 +94,7 @@ const readScript = async (folder: string, fileName: string) => {
       const directiveMatch = trimmed.match(DIRECTIVE);
       if (directiveMatch) {
         const [, name, content] = directiveMatch;
-        const dirName = name.trim() as Directive;
+        const dirName = name.trim() as keyof Directives;
         let dirValue: string | boolean = (content || "").trim();
         if (isFalse(dirValue)) {
           dirValue = false;
@@ -189,14 +195,24 @@ const readScript = async (folder: string, fileName: string) => {
     id: snakeTo(fileNameParts.join("."), "-"),
     content: processedContent,
     title: title.filter(filterEmpty).join(" "),
-    url,
+    path: path.split(/[\\\/]/),
   };
 };
 
-const readScripts = async (folder: string) => {
-  const scriptNames = await readdir(folder);
-  return Promise.all(
-    scriptNames.filter(isSupported).map((fname) => readScript(folder, fname))
+const readScripts = async (folder: string, scripts: ScriptBuildInfo[]) => {
+  const itemNames = await readdir(folder);
+  await Promise.all(
+    itemNames.map(async (name) => {
+      const path = join(folder, name);
+      if (statSync(path).isDirectory()) {
+        await readScripts(path, scripts);
+      } else if (isScriptFile(name)) {
+        const scriptInfo = await readScript(folder, name);
+        if (!scriptInfo.directives.ignore) {
+          scripts.push(scriptInfo);
+        }
+      }
+    })
   );
 };
 
@@ -215,9 +231,6 @@ const serialize = (value: any): string => {
 };
 
 const snakeTo = (string: string, glue: string) => string.replaceAll(/_/g, glue);
-
-const capitalize = (string: string) =>
-  string[0].toUpperCase() + string.slice(1);
 
 const wrapInFE = (code: string, options: WrapperOptions = {}) => /* js */ `${
   options.async ? "async " : ""
@@ -241,33 +254,58 @@ const wrapInObserver = (code: string, options?: WrapperOptions) =>
     { async: false }
   );
 
-export const getScriptInfos = async () => {
-  const folders = [PUBLIC_FOLDER];
-  if (existsSync(LOCAL_FOLDER)) {
-    folders.push(LOCAL_FOLDER);
-  }
-  const scriptInfo = await Promise.all(folders.map(readScripts));
-  const char = (info: ScriptInfo) => (info.title[0] || "").toLowerCase();
-  return scriptInfo
-    .flat()
-    .filter((info) => !info.directives.ignore)
-    .sort((a, b) => (char(a) > char(b) ? 1 : char(a) < char(b) ? -1 : 0));
-};
-
-// Script builders
-export const buildJsScript = (info: ScriptInfo) => {
-  const relevantInfo: Partial<ScriptInfo> = { ...info };
+// Builders
+const buildJsScript = (info: ScriptBuildInfo) => {
+  const relevantInfo: ScriptInfo = { ...info };
   if (relevantInfo.directives!.run !== "clipboard") {
     delete relevantInfo.content;
   }
   return serialize(relevantInfo);
 };
 
-// Index builders
-export const buildMdIndexEntry = ({ title, url }: ScriptInfo) =>
-  `- [${title}](${url})`;
+const buildMdIndexEntry = (scriptInfo: ScriptBuildInfo) =>
+  `- [${scriptInfo.title}](${getScriptURL(scriptInfo)})`;
 
-// Comment builders
-export const jsComment = (comment: string) => `/* ${comment} */`;
-export const htmlComment = (comment: string) => `<!-- ${comment} -->`;
-export const mdComment = htmlComment;
+const buildREADME = async (scriptInfos: ScriptBuildInfo[]) => {
+  const template = await readFile(README_TEMPLATE_PATH, "utf8");
+  const indexEntries = scriptInfos
+    .filter((info) => !info.path.includes("local")) // Only considers public scripts in the README
+    .map(buildMdIndexEntry);
+  const fileContent = template.replace(
+    mdComment("scripts"),
+    indexEntries.join("\n")
+  );
+  await writeFile(README_PATH, fileContent);
+};
+
+const buildPopupJs = async (scriptInfos: ScriptBuildInfo[]) => {
+  const template = await readFile(POPUP_JS_TEMPLATE_PATH, "utf8");
+  const scripts = scriptInfos.map(buildJsScript);
+  const fileContent = template.replace(
+    jsComment("scripts"),
+    scripts.join(",\n  ")
+  );
+  await writeFile(POPUP_JS_PATH, fileContent);
+};
+
+const buildScripts = async (scriptInfos: ScriptBuildInfo[]) => {
+  if (existsSync(BUILT_SCRIPTS_PATH)) {
+    await rm(BUILT_SCRIPTS_PATH, { recursive: true });
+  }
+  await mkdir(BUILT_SCRIPTS_PATH);
+  await Promise.all(
+    scriptInfos.map(({ fileName, content }) =>
+      writeFile(join(BUILT_SCRIPTS_PATH, fileName), content)
+    )
+  );
+};
+
+// Main
+(async () => {
+  const startTime = Date.now();
+  const scriptInfos = await getScriptInfos();
+  await Promise.all(
+    [buildREADME, buildPopupJs, buildScripts].map((fn) => fn(scriptInfos))
+  );
+  console.log(`Scripts finished building in`, Date.now() - startTime, "ms");
+})();

@@ -1,69 +1,33 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { ScriptInfo } from "./scripts";
+import {
+  copyToClipboard,
+  ErrorCatcher,
+  executeScript,
+  formatText,
+  getClass,
+  getGithubURL,
+  getWebsiteHostname,
+  isLocal,
+  LIST_ITEM_CLASS,
+  storageGet,
+  storageRemove,
+  storageSet,
+} from "./utils";
+
 import "./Script.scss";
-import { scripting, storage, tabs } from "./services";
-import { getClass } from "./utils";
 
-const REPLACERS = [
-  ["`", "code"],
-  ["**", "strong"],
-  ["*", "em"],
-];
-const SCRIPTS_PATH = "./scripts/";
-
-const formatText = (text, replacers = [...REPLACERS]) => {
-  const [marker, TagName] = replacers.shift();
-  const parts = text.split(marker);
-  for (let i = 0; i < parts.length; i++) {
-    const value = replacers.length
-      ? formatText(parts[i], [...replacers])
-      : parts[i];
-    parts[i] = i > 0 && i % 2 ? <TagName key={i}>{value}</TagName> : value;
-  }
-  return parts;
-};
-
-const getWebsiteHostname = (url) => {
-  const a = document.createElement("a");
-  a.href = url;
-  return a.hostname;
-};
-
-const LIST_ITEM_CLASS = "list-group-item text-bg-dark";
+export interface ScriptProps {
+  script: ScriptInfo;
+  selected: boolean;
+  onClick: (el: HTMLElement) => any;
+}
 
 export const Script = ({
-  script: { directives, exports, fileName, id, content, title, url },
+  script: { directives, exports, fileName, id, content, title, path },
   selected,
   onClick,
-}) => {
-  const copyToClipboard = async () => {
-    if (content) {
-      try {
-        await navigator.clipboard.writeText(content);
-      } catch (err) {
-        setError(err);
-      }
-    } else {
-      console.debug(`Could not copy script: the content is empty.`);
-    }
-  };
-
-  const executeScript = async () => {
-    try {
-      const [tab] = await tabs.query({
-        active: true,
-        currentWindow: true,
-      });
-      await scripting.executeScript({
-        target: { tabId: tab.id },
-        files: [SCRIPTS_PATH + fileName],
-        world: "MAIN",
-      });
-    } catch (err) {
-      console.debug(err);
-      setError(err);
-    }
-  };
-
+}: ScriptProps) => {
   const getTextColor = () => {
     if (error) {
       return "text-danger";
@@ -75,10 +39,15 @@ export const Script = ({
   };
 
   const runScript = async () => {
+    let result: ErrorCatcher<any>;
     if (isClipboard) {
-      await copyToClipboard();
+      result = await copyToClipboard(content);
     } else {
-      await executeScript();
+      result = await executeScript(fileName);
+    }
+    if (result[1]) {
+      console.debug(result[1]);
+      setError(result[1]);
     }
     setRunCount(runCount + 1);
   };
@@ -87,18 +56,18 @@ export const Script = ({
     const previous = autorun;
     const activate = !autorun;
     setAutorun(activate);
-    try {
-      if (activate) {
-        await storage.sync.set({
-          [id]: { fileName, hostName, id },
-        });
-      } else {
-        await storage.sync.remove(id);
-      }
-    } catch (err) {
-      console.debug(err);
+    let result: ErrorCatcher<true>;
+    if (activate) {
+      result = await storageSet({
+        [id]: { fileName, hostName, id },
+      });
+    } else {
+      result = await storageRemove(id);
+    }
+    if (result[1]) {
+      console.debug(result[1]);
       setAutorun(previous);
-      setError(err);
+      setError(result[1]);
     }
     if (activate && runCount === 0) {
       runScript();
@@ -106,7 +75,7 @@ export const Script = ({
   };
 
   const isClipboard = directives.run === "clipboard";
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<Error | null>(null);
   const [autorun, setAutorun] = useState(false);
   const [runCount, setRunCount] = useState(0);
   const hostName =
@@ -114,16 +83,16 @@ export const Script = ({
 
   useEffect(() => {
     const fetchAutorun = async () => {
-      try {
-        const result = await storage.sync.get(id);
+      const [result, error] = await storageGet(id);
+      if (error) {
+        console.debug(error);
+        setError(error);
+      } else {
         const value = Boolean(result[id]);
         setAutorun(value);
         if (value) {
           setRunCount((count) => count + 1); // FE here to avoid deps
         }
-      } catch (err) {
-        console.debug(err);
-        setError(err);
       }
     };
     fetchAutorun();
@@ -133,14 +102,15 @@ export const Script = ({
     <li
       className={getClass(
         "Script text-bg-dark",
-        directives.group && "ps-5",
         selected
           ? "card selected border-primary my-2"
           : "list-group-item border-0"
       )}
-      tabIndex="0"
-      onClick={onClick}
-      onKeyDown={(ev) => ev.key === "Enter" && onClick(ev)}
+      tabIndex={0}
+      onClick={(ev) => onClick(ev.target as HTMLElement)}
+      onKeyDown={(ev) =>
+        ev.key === "Enter" && onClick(ev.target as HTMLElement)
+      }
     >
       <div className="card-body">
         <h6
@@ -150,6 +120,11 @@ export const Script = ({
             !selected && "m-0"
           )}
         >
+          {directives.icon && (
+            <span className="me-2">
+              <i className={`bi ${directives.icon}`} />
+            </span>
+          )}
           <span className="text-truncate w-100" title={title}>
             {title}
           </span>
@@ -253,17 +228,17 @@ export const Script = ({
       {selected && (
         <footer className="card-footer d-flex align-items-center justify-content-between">
           <code className="text-muted">
-            {url ? (
+            {isLocal(path) ? (
+              <span>Local file</span>
+            ) : (
               <a
-                href={url}
+                href={getGithubURL(...path, fileName)}
                 target="_blank"
                 rel="noreferrer"
                 className="text-reset text-decoration-none"
               >
                 Open on Github <i className="bi bi-box-arrow-up-right" />
               </a>
-            ) : (
-              <span>Local file</span>
             )}
           </code>
         </footer>

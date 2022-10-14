@@ -2,12 +2,12 @@
   "name": "juwuscripts",
   "version": "1.0.0",
   "description": "Collection of QoL and quirky scripts. Feel free to use them.",
-  "main": "./src/loader.ts",
+  "main": "./loader.ts",
   "scripts": {
     "build:prettier": "prettier --write \"./src/**/*.{js,ts}\"",
-    "build:loader": "ts-node ./src/loader.ts",
+    "build:loader": "ts-node ./loader.ts",
     "build:extension": "cd extension && npm run build && cd ..",
-    "build:zip": "ts-node ./src/zipper.ts",
+    "build:zip": "ts-node ./zipper.ts",
     "build": "npm run build:prettier && npm run build:loader && npm run build:extension",
     "start": "cd extension && npm start"
   },
@@ -15,7 +15,9 @@
     "type": "git",
     "url": "git+https://github.com/Arcasias/scripts.git"
   },
-  "keywords": ["juwu"],
+  "keywords": [
+    "juwu"
+  ],
   "author": {
     "name": "Julien Mougenot"
   },
@@ -26,6 +28,8 @@
   "homepage": "https://github.com/Arcasias/scripts#readme",
   "devDependencies": {
     "@types/archiver": "^5.3.1",
+    "@types/react": "^18.0.21",
+    "@types/react-dom": "^18.0.6",
     "@types/uglify-js": "^3.17.0",
     "archiver": "^5.3.1",
     "prettier": "^2.4.1",

@@ -5,6 +5,7 @@
  * @use in a new Google Chrome `Live Expression` block
  * @wrapper none
  * @run clipboard
+ * @icon bi-mouse-fill
  */
 
 onmousemove

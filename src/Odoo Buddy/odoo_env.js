@@ -4,7 +4,6 @@
  * @description Logs several informations about the current Odoo environment, and adds `odoo.session` and `owl.root` variables.
  * @use on any Odoo environment.
  * @requires odoo
- * @group Odoo Buddy
  */
 
 const { odoo, owl, location } = window;
