@@ -1,0 +1,12 @@
+// Bootstrap overrides
+@import "./style/bootstrap.overrides.scss";
+
+// Bootstrap main lib + icons
+@import "~bootstrap/scss/bootstrap";
+@import "~bootstrap-icons/font/bootstrap-icons";
+
+// Root variables
+@import "./style/root.scss";
+
+// Other SCSS files
+@import "./style/animations.scss";

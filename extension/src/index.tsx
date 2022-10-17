@@ -1,11 +1,17 @@
-import React from "react";
+import React, { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import { Popup } from "./Popup";
+import { App } from "./components/App";
+import { TabProvider } from "./providers/TabProvider";
+import { ThemeProvider } from "./providers/ThemeProvider";
 
-import "./root.scss";
+import "./style.scss";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <Popup />
-  </React.StrictMode>
+  <StrictMode>
+    <TabProvider>
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    </TabProvider>
+  </StrictMode>
 );

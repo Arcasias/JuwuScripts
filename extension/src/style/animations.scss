@@ -1,0 +1,53 @@
+@keyframes grow {
+  from {
+    opacity: 0.5;
+    transform: scale(0.5);
+  }
+}
+
+@keyframes slide-down {
+  from {
+    margin-top: -1rem;
+    opacity: 0.2;
+  }
+}
+
+@keyframes slide-left {
+  from {
+    margin-right: -1rem;
+    opacity: 0.2;
+  }
+}
+
+@keyframes slide-right {
+  from {
+    margin-left: -1rem;
+    opacity: 0.2;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animation-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animation-grow {
+  animation: grow 1s;
+}
+
+.animation-slide-down {
+  animation: slide-down 0.15s;
+}
+
+.animation-slide-left {
+  animation: slide-left 0.15s;
+}
+
+.animation-slide-right {
+  animation: slide-right 0.15s;
+}

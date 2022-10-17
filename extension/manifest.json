@@ -6,9 +6,14 @@
   "background": {
     "service_worker": "./background.js"
   },
-  "permissions": ["background", "activeTab", "tabs", "scripting", "storage"],
+  "permissions": ["activeTab", "background", "scripting", "storage", "tabs"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "action": {
     "default_popup": "./build/index.html"
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
   }
 }

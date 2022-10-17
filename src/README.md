@@ -1,4 +1,3 @@
-[//]: # (⚠️ PRODUCTION FILE: DO NOT EDIT ⚠️)
 # <img alt="JuwuScript" src="src/icon.png" width="32"> JuwuScripts
 
 Collection of useful or quirky scripts that I wrote or found and wanted to re-use easily.
@@ -9,21 +8,7 @@ You can [build and use](#how-to-use) the integrated Chrome extension to have a p
 
 ## <a name="index"></a> Index
 
-- [Auto login](https://github.com/Arcasias/scripts/blob/master/scripts/Odoo%20Buddy/odoo_login.js)
-- [Cross-reload timer](https://github.com/Arcasias/scripts/blob/master/scripts/timer.js)
-- [Dark mode](https://github.com/Arcasias/scripts/blob/master/scripts/Odoo%20Buddy/odoo_dark_mode.js)
-- [Global scanner](https://github.com/Arcasias/scripts/blob/master/scripts/glob_scanner.js)
-- [Hexadecimal to RGB and vice-versa](https://github.com/Arcasias/scripts/blob/master/scripts/color_operations.js)
-- [Mouse position](https://github.com/Arcasias/scripts/blob/master/scripts/mouse.js)
-- [Netflix & Do nothing](https://github.com/Arcasias/scripts/blob/master/scripts/lazy_netflix.js)
-- [Odoo Environment](https://github.com/Arcasias/scripts/blob/master/scripts/Odoo%20Buddy/odoo_env.js)
-- [Red square](https://github.com/Arcasias/scripts/blob/master/scripts/red_square.js)
-- [Remove YouTube suggestion cards](https://github.com/Arcasias/scripts/blob/master/scripts/youtube_cards.js)
-- [Run away](https://github.com/Arcasias/scripts/blob/master/scripts/runaway.js)
-- [Shana Project 1080p](https://github.com/Arcasias/scripts/blob/master/scripts/shana.js)
-- [Spongebobify](https://github.com/Arcasias/scripts/blob/master/scripts/spongebobify.js)
-- [Storage analyzer](https://github.com/Arcasias/scripts/blob/master/scripts/Storage/storage_analyzer.js)
-- [Storage eraser](https://github.com/Arcasias/scripts/blob/master/scripts/Storage/storage_eraser.js)
+[//]: # (scripts)
 
 ## <a name="how-to-use"></a> How to use
 

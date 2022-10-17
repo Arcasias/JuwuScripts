@@ -1,0 +1,13 @@
+.script-group-name {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.script-group-caret {
+  font-size: 0.8em;
+  transition: transform 0.15s;
+
+  &.upside-down {
+    transform: rotate(180deg);
+  }
+}

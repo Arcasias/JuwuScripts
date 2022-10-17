@@ -2,10 +2,8 @@
   "compilerOptions": {
     "strict": true,
     "alwaysStrict": true,
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
     "skipLibCheck": true,
-    "moduleResolution": "node",
+    "moduleResolution": "Classic",
     "target": "ESNext",
     "lib": [
       "ESNext",
@@ -17,7 +15,7 @@
       "ESNext.String",
       "ESNext.Symbol"
     ],
-    "rootDir": "."
+    "outFile": "../../extension/background.js"
   },
-  "exclude": ["./node_modules"]
+  "include": ["."]
 }

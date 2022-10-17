@@ -1,0 +1,24 @@
+.Script {
+  transition: border 0.15s, margin 0.15s;
+
+  .script-title {
+    transition: color 0.15s;
+  }
+
+  &:not(.selected) {
+    cursor: pointer;
+
+    &:hover {
+      .script-title {
+        color: var(--bs-primary);
+      }
+    }
+  }
+
+  &.selected {
+    .script-title {
+      cursor: pointer;
+      color: var(--bs-primary);
+    }
+  }
+}

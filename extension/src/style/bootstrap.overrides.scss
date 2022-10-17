@@ -1,0 +1,19 @@
+$primary: #ff0080;
+$secondary: #ffa030;
+$code-color: #1888ff;
+
+// Remove default transition for "border-color" and "background-color" on .btn elements
+.btn {
+  &:not(.background-transition) {
+    transition: color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  }
+}
+
+// Force bootstrap icons to fit in a 20x20 square
+.bi {
+  max-width: 20px;
+  max-height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

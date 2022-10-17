@@ -2,7 +2,13 @@ import archiver from "archiver";
 import { createWriteStream } from "fs";
 import { join } from "path";
 
-const EXPORTED_FILES = ["manifest.json", "background.js"];
+const EXPORTED_FILES = [
+  "manifest.json",
+  "background.js",
+  "icon16.png",
+  "icon48.png",
+  "icon128.png",
+];
 const EXPORTED_FOLDERS = ["build", "img", "scripts"];
 const SOURCE_DIR = "./extension";
 const TARGET_FILE = "./extension.zip";

@@ -1,15 +1,17 @@
 {
   "name": "juwuscripts",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Collection of QoL and quirky scripts. Feel free to use them.",
   "main": "./loader.ts",
   "scripts": {
-    "build:prettier": "prettier --write \"./src/**/*.{js,ts}\"",
+    "build:prettier": "prettier --write \"./scripts/**/*.{js,ts}\"",
     "build:loader": "ts-node ./loader.ts",
-    "build:extension": "cd extension && npm run build && cd ..",
-    "build:zip": "ts-node ./zipper.ts",
+    "build:background": "tsc --project ./src/background/tsconfig.json && uglifyjs ./extension/background.js -o ./extension/background.js",
+    "build:extension": "npm run build:background && cd ./extension && npm run build && cd ..",
     "build": "npm run build:prettier && npm run build:loader && npm run build:extension",
-    "start": "cd extension && npm start"
+    "create": "npm install && npm run build:loader && cd ./extension && npm install && cd .. && npm run build:extension",
+    "start": "cd ./extension && npm start",
+    "zip": "npm run build && ts-node ./zipper.ts"
   },
   "repository": {
     "type": "git",
@@ -28,10 +30,11 @@
   "homepage": "https://github.com/Arcasias/scripts#readme",
   "devDependencies": {
     "@types/archiver": "^5.3.1",
-    "@types/react": "^18.0.21",
-    "@types/react-dom": "^18.0.6",
+    "@types/chrome": "^0.0.198",
+    "@types/jimp": "^0.2.28",
     "@types/uglify-js": "^3.17.0",
     "archiver": "^5.3.1",
+    "jimp": "^0.16.2",
     "prettier": "^2.4.1",
     "ts-node": "^10.9.1",
     "uglify-js": "^3.17.2"

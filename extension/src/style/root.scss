@@ -1,0 +1,57 @@
+// Root variables
+:root {
+  .dark-theme {
+    --bs-success: #20c060;
+    --bs-info: #40e0ff;
+    --bs-primary-rgb: 255, 0, 128;
+    --bs-success-rgb: 32, 192, 96;
+    --bs-info-rgb: 64, 224, 255;
+
+    --scrollbar-color-1: var(--bs-gray-800);
+    --scrollbar-color-2: var(--bs-gray-700);
+    --scrollbar-color-3: var(--bs-gray-600);
+  }
+
+  .light-theme {
+    --scrollbar-color-1: var(--bs-gray-200);
+    --scrollbar-color-2: var(--bs-gray-400);
+    --scrollbar-color-3: var(--bs-gray-500);
+  }
+}
+
+// User selection
+::selection {
+  background-color: var(--bs-secondary);
+}
+
+// Scrollbar
+::-webkit-scrollbar {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: inherit;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-color-1);
+  border-radius: 100rem;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-color-2);
+  border-radius: 100rem;
+
+  &:hover {
+    background: var(--scrollbar-color-3);
+  }
+}
+
+// Search input pseudo element
+input[type="search"]::-webkit-search-cancel-button {
+  appearance: none;
+  cursor: pointer;
+  opacity: 0.75;
+  background-color: var(--bs-primary);
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23777'><path d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/></svg>");
+  width: 20px;
+  height: 20px;
+}

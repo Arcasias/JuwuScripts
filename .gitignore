@@ -2,8 +2,16 @@
 node_modules/
 package-lock.json
 
+# Built shit
+extension/build/
+extension/scripts/
+extension/src/scripts.ts
+extension/**/*.js
+extension/**/*.png
+extension/**/*.ico
+
 # Zipped shit
 extension.zip
 
 # Won't publish local stuff
-src/local/
+scripts/local/
