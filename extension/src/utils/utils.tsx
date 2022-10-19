@@ -9,6 +9,7 @@ interface StorageScriptInfo {
 }
 
 export type ErrorCatcher<T> = [T, null] | [null, Error];
+type Replacer = (substring: string, ...args: any[]) => string;
 
 export const canScriptRun = (
   script: ScriptInfo,
@@ -138,6 +139,22 @@ export const plural = (term: string, amount: number) => {
   return amount === 1 ? term : term + "s";
 };
 
+export const caseReplacer = (target: string): Replacer => {
+  return (match: string) => {
+    const result = [];
+    for (let i = 0; i < target.length; i++) {
+      if (/[a-z]/.test(match[i])) {
+        result.push(target[i].toLowerCase());
+      } else if (/[A-Z]/.test(match[i])) {
+        result.push(target[i].toUpperCase());
+      } else {
+        result.push(target[i]);
+      }
+    }
+    return result.join("");
+  };
+};
+
 export const storageGet = async (keys?: string | string[]) =>
   catchAsyncError(() => browser.storage.sync.get(keys));
 
@@ -148,28 +165,41 @@ export const storageSet = async (values: Record<string, any>) =>
   catchAsyncError(() => browser.storage.sync.set(values));
 
 export const uwuify = (text: string) =>
-  text
-    .replaceAll(/r+/g, "w")
-    .replaceAll(/R+/g, "W")
-    .replaceAll(/oo/g, "owo")
-    .replaceAll(/uu/g, "uwu")
-    .replaceAll(
-      /\s*([.!?])(\w?)/g,
-      (full: string, dot: string, after: string) =>
-        after ? full : ` ${UWU_REPLACERS[dot as keyof typeof UWU_REPLACERS]}`
-    );
+  UWU_REPLACERS.reduce(
+    (current, [regex, replacer]) =>
+      (current = current.replace(regex, replacer as Replacer)),
+    text
+  );
 
+// String constants
+export const GITHUB_URL = "https://github.com/Arcasias/scripts/blob/master";
+
+// Other constants
 const REPLACERS: [string, any][] = [
   ["`", "code"],
   ["**", "strong"],
   ["*", "em"],
 ];
-const UWU_REPLACERS = {
+const UWU_DOT_REPLACERS: Record<string, string> = {
   ".": "UwU",
   "?": "OwO",
   "!": ">w<",
 };
-
-// String constants
-export const GITHUB_URL = "https://github.com/Arcasias/scripts/blob/master";
-export const SCRIPTS_PATH = "./scripts/";
+const UWU_INSERT_W = "$1w$2";
+const UWU_REPLACERS: [RegExp, string | Replacer][] = [
+  [/\b(t|d)o\b/gi, "$1uwu"],
+  [/\bgo\b/gi, caseReplacer("gow")],
+  [/\byou\b/gi, caseReplacer("uwu")],
+  [/\bwindow\b/gi, caseReplacer("windowo")],
+  [/\b(ca)(n)\b/gi, UWU_INSERT_W],
+  [/\b(no)(t)\b/gi, UWU_INSERT_W],
+  [/\b(tha)(t)\b/gi, UWU_INSERT_W],
+  [/\b(thi)(s)\b/gi, UWU_INSERT_W],
+  [/\b(the)(m)\b/gi, UWU_INSERT_W],
+  [/[rl]/gi, caseReplacer("w")],
+  [/(o)(o)/gi, UWU_INSERT_W],
+  [
+    /\s*([.!?])(\w?)/g,
+    (full, dot, after) => (after ? full : ` ${UWU_DOT_REPLACERS[dot]}`),
+  ],
+];

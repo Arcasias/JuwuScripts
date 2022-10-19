@@ -301,7 +301,7 @@ export const Script = ({
             </ScriptButton>
           )}
           {isLocal(path) && (
-            <code className="text-muted ms-auto">Local file</code>
+            <code className="text-muted ms-auto">{t("Local file")}</code>
           )}
         </footer>
       )}

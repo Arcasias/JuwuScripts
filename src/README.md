@@ -48,14 +48,14 @@ comment block:
 
 ```js
 /**
- * My scwipt title
+ * My scwipt titwe
  *
- * I can add spaces and line bweaks
- * to my descwiption OwO
- * @directive_that_does_not_exist
- * This will not go in the descwiption >w<
+ * I cawn add spaces awnd wine bweaks
+ * tuwu my descwiption owo
+ * @diwective_that_does_not_exist
+ * Thiws wiww nowt gow in the descwiption  >w<
  */
-console.log("This will appeaw in the cuwent window's console!");
+consowe.wog("Thiws wiww appeaw in the cuwent windowo's consowe!");
 ```
 
 ### <a name="directives-autorun-run"></a> Run and autorun
@@ -82,11 +82,11 @@ to the clipboard. Note that this disables the `autorun` feature as well.
 ```js
 /**
  * My non-wunnable scwipt
- * You can't wun me >w<
+ * Uwu cawn't wun me >w<
  * @run disabled
- * ... but you can still autowun me OwO
+ * ... but uwu cawn stiww autowun me OwO
  */
-console.log("Page loaded UwU");
+consowe.wog("Page woaded UwU");
 ```
 
 ### <a name="directives-delay"></a> Delay
@@ -100,10 +100,10 @@ when in `autorun` mode.
 ```js
 /**
  * Auto wefwesh
- * I will wefwesh youw page evewy 60 seconds •w•
+ * I wiww wefwesh youw page evewy 60 seconds •w•
  * @delay 6e4
  */
-window.location.reload();
+windowo.wocation.wewoad();
 ```
 
 ### <a name="directives-icon"></a> Icon
@@ -119,13 +119,13 @@ name.
 ```js
 /**
  * Mouwuse twackew
- * Look! I can twack youw mouwuse UwU
- * And thewe's a wittle cuty mouse in the intewface >w<
+ * Wook! I cawn twack youw mouwuse UwU
+ * And thewe's a wittwe cuty mouse in the intewface >w<
  * @icon bi-mouse
  */
-window.addEventListener(
+windowo.addEventWistener(
   "mousemove",
-  ({ clientX, clientY }) => console.log(`Mouse is at [${clientX}, ${clientY}] UwU`)
+  ({ cwientX, cwientY }) => consowe.wog(`Mouse is at [${cwientX}, ${cwientY}] UwU`)
 );
 ```
 
@@ -142,10 +142,10 @@ The notation is just the same as the content of a native JavaScript regular expr
 
 ```js
 /**
- * Google and Youwube scwipt
+ * Googwe and Youwube scwipt
  * @pattern (\w+\.)?(google|youtube).com
  */
-console.log("You'we on a Google-owned website >w<");
+consowe.wog("Uwu'we on a Googwe-owned website >w<");
 ```
 
 ### <a name="directives-requires"></a> Variable requirement
@@ -159,10 +159,10 @@ detected on the current page's window object.
 ```js
 /**
  * UwU scwipt
- * I will only wun if "uwu" is on the windowo object!
+ * I wiww onwy wun if "uwu" is on the windowo object!
  * @requires uwu
  */
-console.log(window.uwu);
+consowe.wog(windowo.uwu);
 ```
 
 ### <a name="directives-website"></a> Website
@@ -183,7 +183,7 @@ the given website.
  * GitHuwub scwipt
  * @website https://github.com/
  */
-console.log("You'we visiting GitHuwub! OwO");
+consowe.wog("Uwu'we visiting GitHuwub! OwO");
 ```
 
 ### <a name="directives-wrapper"></a> Wrapper
@@ -206,11 +206,11 @@ step, so you don't have to worry about readability / comments when writing your 
 ```js
 /**
  * Wemove pesky notification
- * I will wemove these pesky notifications evewy time they appeaw ^w^
+ * I wiww wemove these pesky notifications evewy time they appeaw ^w^
  * @wrapper observer
  */
-[...document.querySelectorAll(".uwu-pesky-notification")].forEach((
-  (notification) => notification.remove()
+[...document.quewySewectowAww(".uwu-pesky-notification")].fowEach((
+  (notification) => notification.wemove()
 ));
 ```
 
