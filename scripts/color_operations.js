@@ -3,7 +3,7 @@
  *
  * Converts **RGB arrays** to **hexadecimal** colors and vice-versa.
  *
- * @icon palette
+ * @icon bi-palette
  */
 
 export const hexToRgb = (hex) =>

@@ -1,14 +1,15 @@
 export interface ScriptDirectives {
   autorun: boolean;
+  delay?: number;
   description?: string;
   exports: Record<string, ScriptExportType>;
   icon?: string;
   ignore?: boolean;
-  image?: string;
   pattern?: RegExp;
   requires?: string;
   run: ScriptRunOption;
   title: string;
+  uwu?: boolean;
   website?: string;
   wrapper: ScriptWrapper;
 }

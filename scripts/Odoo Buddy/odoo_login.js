@@ -4,7 +4,7 @@
  * Adds options to the Odoo backend login screen to log in as admin, user or portal
  * in a single click.
  *
- * @image https://www.odoo.com/favicon.ico
+ * @icon https://www.odoo.com/favicon.ico
  * @pattern runbot\d+\.odoo\.com|localhost|\d+.\d+.\d+.\d+:\d+
  * @requires odoo
  */

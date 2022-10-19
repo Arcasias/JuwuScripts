@@ -48,9 +48,14 @@ comment block:
 
 ```js
 /**
- * My script title
- * A detailed description of my script.
+ * My scwipt title
+ *
+ * I can add spaces and line bweaks
+ * to my descwiption OwO
+ * @directive_that_does_not_exist
+ * This will not go in the descwiption >w<
  */
+console.log("This will appeaw in the cuwent window's console!");
 ```
 
 ### <a name="directives-autorun-run"></a> Run and autorun
@@ -76,29 +81,52 @@ to the clipboard. Note that this disables the `autorun` feature as well.
 
 ```js
 /**
- * My non-runnable script
- *
- * @autorun disabled
+ * My non-wunnable scwipt
+ * You can't wun me >w<
+ * @run disabled
+ * ... but you can still autowun me OwO
  */
+console.log("Page loaded UwU");
 ```
 
-### <a name="directives-image-icon"></a> Image and icon
+### <a name="directives-delay"></a> Delay
+
+The `delay` directive will make the script run after a given duration (in milliseconds)
+when in `autorun` mode.
+
+* Default: 0 (immediate).
+* Example:
+
+```js
+/**
+ * Auto wefwesh
+ * I will wefwesh youw page evewy 60 seconds •w•
+ * @delay 6e4
+ */
+window.location.reload();
+```
+
+### <a name="directives-icon"></a> Icon
 
 You can add a [Bootstrap Icon](https://icons.getbootstrap.com/) or an image (local
-or URL) to the script. If the image is a local path, the image must be added to
+path or URL) to the script. If the image is a local path, the image must be added to
 the `JuwuScript/extension/src/img` folder, and the directive value will be the file
-name. If both `icon` and `image` are specified, the image will override the icon.
+name.
 
 * Default: if [`website`](#directives-website) is specified: the icon of that website will be fetched by default.
 * Example:
 
 ```js
 /**
- * My mouse-related script
- *
- * @icon mouse
- * @image https://www.some-website.com/a-mouse-image.png
+ * Mouwuse twackew
+ * Look! I can twack youw mouwuse UwU
+ * And thewe's a wittle cuty mouse in the intewface >w<
+ * @icon bi-mouse
  */
+window.addEventListener(
+  "mousemove",
+  ({ clientX, clientY }) => console.log(`Mouse is at [${clientX}, ${clientY}] UwU`)
+);
 ```
 
 ### <a name="directives-pattern"></a> URL pattern matching
@@ -114,10 +142,10 @@ The notation is just the same as the content of a native JavaScript regular expr
 
 ```js
 /**
- * My google and youtube script
- *
+ * Google and Youwube scwipt
  * @pattern (\w+\.)?(google|youtube).com
  */
+console.log("You'we on a Google-owned website >w<");
 ```
 
 ### <a name="directives-requires"></a> Variable requirement
@@ -130,10 +158,11 @@ detected on the current page's window object.
 
 ```js
 /**
- * My someGlobalVar-dependent script
- *
- * @requires someGlobalVar
+ * UwU scwipt
+ * I will only wun if "uwu" is on the windowo object!
+ * @requires uwu
  */
+console.log(window.uwu);
 ```
 
 ### <a name="directives-website"></a> Website
@@ -141,15 +170,20 @@ detected on the current page's window object.
 Restricts your script to a given URL. Note that it only prevents the `autorun` calls
 on the given website, you can still [`run`](#directives-autorun-run) it manually (if not disabled).
 
+Note that the [`pattern`](#directives-pattern) directive will override this behavior.
+
+This directive also appends a button to the script in the interface to redirect to
+the given website.
+
 * Default: none (runs on all websites)
 * Example:
 
 ```js
 /**
- * My github script
- *
+ * GitHuwub scwipt
  * @website https://github.com/
  */
+console.log("You'we visiting GitHuwub! OwO");
 ```
 
 ### <a name="directives-wrapper"></a> Wrapper
@@ -171,8 +205,29 @@ step, so you don't have to worry about readability / comments when writing your 
 
 ```js
 /**
- * My multiple-times-running script
- *
+ * Wemove pesky notification
+ * I will wemove these pesky notifications evewy time they appeaw ^w^
  * @wrapper observer
+ */
+[...document.querySelectorAll(".uwu-pesky-notification")].forEach((
+  (notification) => notification.remove()
+));
+```
+
+### <a name="directives-uwu"></a> \[DIRECTIVE_NAME_117119117\]
+
+> Careful: this is probably the most complex and advanced feature of this project.
+> It has not been properly tested or documented because of its hazardous nature.
+> However it has been found that a careless use of this feature can lead to serious
+> brain damage and the inability to use the letter "R" ever again.
+
+*Missing documentation.*
+
+* Default: ???
+* Example:
+```js
+/**
+ * ???
+ * @uwu
  */
 ```

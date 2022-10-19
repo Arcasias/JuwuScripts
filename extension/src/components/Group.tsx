@@ -1,6 +1,7 @@
 import React, { useContext, useMemo } from "react";
 import { TabContext } from "../providers/TabProvider";
 import { ThemeContext } from "../providers/ThemeProvider";
+import { TranslationContext } from "../providers/TranslationProvider";
 import { ScriptInfo } from "../scripts";
 import { canScriptRun, getClass, getId, plural } from "../utils/utils";
 
@@ -49,6 +50,7 @@ export const Group = ({
 
   const tab = useContext(TabContext);
   const theme = useContext(ThemeContext);
+  const t = useContext(TranslationContext);
 
   const [idle, running, disabled, title] = useMemo(() => {
     let idle = 0;
@@ -75,7 +77,9 @@ export const Group = ({
       titleParts.push(`${disabled} ${plural("script", disabled)} disabled`);
     }
 
-    return [idle, running, disabled, `${group.name}: ${titleParts.join(", ")}`];
+    const title = `${group.name}: ${titleParts.join(", ")}`;
+
+    return [idle, running, disabled, title];
   }, [tab, group.name, group.scripts, autorun]);
 
   return (
@@ -86,12 +90,12 @@ export const Group = ({
           "script-group-name text-secondary list-group-item user-select-none ps-2 m-0 border-0 d-flex animation-slide-right"
         )}
         onClick={toggleOpen}
-        title={title}
+        title={t(title)}
       >
         <span className="me-2">
           <i className="bi bi-folder-fill" />
         </span>
-        <span>{group.name}</span>
+        <span>{t(group.name)}</span>
         <span className="ms-1 opacity-50">
           (
           {displayNumbers().reduce((prev: any, curr: any) => [

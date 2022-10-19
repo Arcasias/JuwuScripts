@@ -4,12 +4,12 @@
   "description": "Collection of QoL and quirky scripts. Feel free to use them.",
   "main": "./loader.ts",
   "scripts": {
-    "build:prettier": "prettier --write \"./scripts/**/*.{js,ts}\"",
+    "build:prettier": "prettier --write \"./*.{js,ts}\" \"./scripts/**/*.{js,ts}\" \"./extension/src/**/*.{js,jsx,ts,tsx}\"",
     "build:loader": "ts-node ./loader.ts",
     "build:background": "tsc --project ./src/background/tsconfig.json && uglifyjs ./extension/background.js -o ./extension/background.js",
     "build:extension": "npm run build:background && cd ./extension && npm run build && cd ..",
-    "build": "npm run build:prettier && npm run build:loader && npm run build:extension",
-    "create": "npm install && npm run build:loader && cd ./extension && npm install && cd .. && npm run build:extension",
+    "build": "npm run build:prettier && npm run build:loader -- && npm run build:background && npm run build:extension",
+    "create": "npm install && cd ./extension && npm install && cd .. && npm run build:loader -- && npm run build:background && npm run build:extension",
     "start": "cd ./extension && npm start",
     "zip": "npm run build && ts-node ./zipper.ts"
   },

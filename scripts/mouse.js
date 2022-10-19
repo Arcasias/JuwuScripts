@@ -4,7 +4,7 @@
  * Displays the mouse position in real time in the dev tools. This script is designed
  * to run in a Google Chrome `Live Expression` block.
  *
- * @icon mouse
+ * @icon bi-mouse
  * @run clipboard
  * @wrapper none
  */

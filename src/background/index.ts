@@ -1,4 +1,5 @@
 interface StorageScriptInfo {
+  delay?: number;
   fileName: string;
   pattern: string | false;
 }
@@ -57,28 +58,56 @@ const executeScripts = async (
     return;
   }
 
-  const scriptFileNames = filteredScripts.map(({ fileName }) => fileName);
+  // Sort between delayed and immediate scripts
+  const asyncScripts: Record<number, StorageScriptInfo[]> = {};
+  const syncScripts: StorageScriptInfo[] = [];
+
+  for (const script of filteredScripts) {
+    if (!force && script.delay) {
+      if (!asyncScripts[script.delay]) {
+        asyncScripts[script.delay] = [];
+      }
+      const scriptWoDelay = { ...script };
+      delete scriptWoDelay.delay;
+      asyncScripts[script.delay].push(scriptWoDelay);
+    } else {
+      syncScripts.push(script);
+    }
+  }
+
+  for (const [delay, batch] of Object.entries(asyncScripts)) {
+    setTimeout(async () => {
+      if (await checkTabActivity(tab)) {
+        executeScripts(batch, tab, force);
+      }
+    }, Number(delay));
+  }
 
   // Update counter on current tab
   const executedScripts = tabScripts.get(tab.id) || new Set();
-  scriptFileNames.forEach((fileName) => executedScripts.add(fileName));
+  filteredScripts.forEach(({ fileName }) => executedScripts.add(fileName));
   tabScripts.set(tab.id, executedScripts);
 
-  try {
-    await Promise.all([
-      updateBadge(tab.id, String(executedScripts.size)),
+  // Updates the badge and executes synchronous scripts
+  const promises: Promise<any>[] = [updateBadge(tab.id, String(executedScripts.size))];
+  if (syncScripts.length) {
+    promises.push(
       browser.scripting.executeScript({
         target: { tabId: tab.id },
-        files: scriptFileNames.map((fileName) => SCRIPTS_PATH + fileName),
+        files: syncScripts.map(({ fileName }) => SCRIPTS_PATH + fileName),
         world: "MAIN",
-      }),
-    ]);
+      })
+    );
+  }
+
+  try {
+    await Promise.all(promises);
     console.log(
       ...logTab(tab),
       "executed scripts (",
       executedScripts.size,
       ")",
-      scriptFileNames
+      filteredScripts.map(({ fileName }) => fileName)
     );
   } catch (error) {
     console.error(...logTab(tab), error);

@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { TabContext } from "../providers/TabProvider";
 import { ThemeContext } from "../providers/ThemeProvider";
+import { TranslationContext } from "../providers/TranslationProvider";
 import { ScriptInfo } from "../scripts";
 import {
   canScriptRun,
@@ -10,13 +11,15 @@ import {
   formatText,
   getClass,
   getGithubURL,
-  getWebsiteHostName,
-  groupNameFromPath,
+  isIcon,
   isLocal,
   isURL,
+  parseWebsite,
 } from "../utils/utils";
 
 import "./Script.scss";
+import { ScriptAlert } from "./ScriptAlert";
+import { ScriptButton } from "./ScriptButton";
 
 export interface ScriptProps {
   autorun: boolean;
@@ -27,7 +30,8 @@ export interface ScriptProps {
 }
 
 const IMG_PATH = "../img/";
-const RUN_TIMEOUT = 2500;
+const RUN_TIMEOUT = 3e3;
+const URL_DOESNT_MATCH = "Cannot run: URL doesn't match.";
 
 export const Script = ({
   autorun,
@@ -36,11 +40,29 @@ export const Script = ({
   toggleAutorun,
   toggleSelected,
 }: ScriptProps) => {
+  const addError = (error: Error | null) =>
+    error &&
+    !errors.includes(error.message) &&
+    setErrors([error.message, ...errors]);
+
+  const removeError = (error: string | null) =>
+    error &&
+    error.includes(error) &&
+    setErrors((errors) => errors.filter((w) => w !== error));
+
+  const addWarning = (warning: string | null) =>
+    warning &&
+    !warnings.includes(warning) &&
+    setWarnings([warning, ...warnings]);
+
+  const removeWarning = (warning: string | null) =>
+    warning &&
+    warning.includes(warning) &&
+    setWarnings((warnings) => warnings.filter((w) => w !== warning));
+
   const getTextColor = () => {
-    if (error) {
+    if (errors.length) {
       return "text-danger";
-    } else if (!canRun) {
-      return "text-muted";
     } else if (autorun) {
       return "text-info";
     } else if (didRun) {
@@ -49,15 +71,17 @@ export const Script = ({
   };
 
   const runScript = async () => {
-    let result: ErrorCatcher<any>;
+    let result: ErrorCatcher<void>;
     if (isClipboard) {
       result = await copyToClipboard(content);
-    } else {
+    } else if (canRun) {
       result = await executeScript(script, true);
+    } else {
+      return;
     }
     if (result[1]) {
       console.debug(result[1]);
-      setError(result[1]);
+      addError(result[1]);
     } else {
       setDidRun(true);
     }
@@ -73,20 +97,21 @@ export const Script = ({
 
   const tab = useContext(TabContext);
   const theme = useContext(ThemeContext);
+  const t = useContext(TranslationContext);
 
-  const isClipboard = directives.run === "clipboard";
-  const [error, setError] = useState<Error | null>(null);
+  const websiteInfo = useMemo(
+    () => parseWebsite(directives.website),
+    [directives.website]
+  );
+
+  const [errors, setErrors] = useState<string[]>([]);
+  const [warnings, setWarnings] = useState<string[]>([]);
   const [didRun, setDidRun] = useState(false);
-  const canRun = useMemo(() => canScriptRun(script, tab), [script, tab]);
 
-  let { image } = directives;
-  if (!image && directives.website) {
-    let website = directives.website;
-    if (!website.endsWith("/")) {
-      website += "/";
-    }
-    image = website + "favicon.ico";
-  }
+  const canRun = canScriptRun(script, tab);
+  const icon =
+    directives.icon || (websiteInfo && `${websiteInfo.origin}/favicon.ico`);
+  const isClipboard = directives.run === "clipboard";
 
   useEffect(() => {
     if (didRun) {
@@ -97,6 +122,15 @@ export const Script = ({
     }
   }, [didRun]);
 
+  useEffect(() => {
+    if (canRun) {
+      removeWarning(URL_DOESNT_MATCH);
+    } else if (autorun) {
+      addWarning(URL_DOESNT_MATCH);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autorun, canRun]);
+
   return (
     <li
       className={getClass(
@@ -106,8 +140,8 @@ export const Script = ({
           ? "card selected my-2 shadow"
           : getClass(
               "list-group-item",
-              (image || directives.icon) && "ps-1",
-              groupNameFromPath(path) && "ms-3"
+              icon && "ps-1",
+              path.length > 1 && "ms-3"
             )
       )}
       tabIndex={0}
@@ -115,41 +149,47 @@ export const Script = ({
       onKeyDown={(ev) => ev.key === "Enter" && tryToToggleSelected(ev)}
     >
       <div className="card-body">
+        {/* Header */}
         <h6
           className={getClass(
-            "card-title d-flex align-items-center",
+            "card-title d-flex align-items-center m-0",
             getTextColor(),
+            !canRun && "opacity-50",
             !selected && "m-0"
           )}
         >
-          {(image || directives.icon) && (
+          {icon && (
             <span className="me-2 d-flex">
-              {image ? (
+              {isIcon(icon) ? (
+                <i
+                  className={`bi ${icon}${theme.is("light") ? "-fill" : ""}`}
+                />
+              ) : (
                 <img
                   className="mh-100 w-auto"
                   width={16}
                   height={16}
-                  src={isURL(image) ? image : require(IMG_PATH + image)}
-                  alt={image}
+                  src={isURL(icon) ? icon : require(IMG_PATH + icon)}
+                  alt={t(directives.title)}
                 />
-              ) : (
-                <i className={`bi bi-${directives.icon}`} />
               )}
             </span>
           )}
+          {/* Title */}
           <span
             className={getClass(
               getTextColor(),
               "script-title text-truncate w-100"
             )}
-            title={
+            title={t(
               directives.title +
-              (canRun ? (autorun ? " (running)" : "") : " (disabled)")
-            }
+                (canRun ? (autorun ? " (running)" : "") : " (disabled)")
+            )}
           >
-            {directives.title}
+            {formatText(t(directives.title))}
           </span>
-          <div className={getClass(getTextColor(), "ms-auto btn-group")}>
+          {/* Run actions */}
+          <div className="ms-auto btn-group">
             {directives.run && canRun && (
               <button
                 className={getClass(
@@ -163,7 +203,7 @@ export const Script = ({
                   ev.stopPropagation();
                   runScript();
                 }}
-                title={isClipboard ? "Copy to clipboard" : "Run script"}
+                title={t(isClipboard ? "Copy to clipboard" : "Run script")}
               >
                 <i
                   className={`bi bi-${isClipboard ? "clipboard" : "play"}-fill`}
@@ -175,108 +215,94 @@ export const Script = ({
                 className={getClass(
                   theme.className,
                   "btn border-0 p-0 px-1",
-                  canRun ? autorun && "text-info" : "text-muted",
-                  autorun && "animation-spin"
+                  autorun && "text-info animation-spin"
                 )}
                 onClick={(ev) => {
                   ev.stopPropagation();
                   toggleAutorun();
                 }}
-                title={
+                title={t(
                   autorun ? "Stop autorunning" : "Autorun script at page load"
-                }
+                )}
               >
                 <i className="bi bi-arrow-repeat" />
               </button>
             )}
           </div>
         </h6>
-        {selected && (
-          <p className="card-text">
-            {directives.description ? (
-              formatText(directives.description)
-            ) : (
-              <>No description for this script.</>
-            )}
+        {/* Description */}
+        {selected && directives.description && (
+          <p className="card-text mt-2">
+            {formatText(t(directives.description))}
           </p>
         )}
       </div>
       {selected && (
         <ul className="border-0 list-group list-group-flush">
-          {directives.website && (
-            <li className={getClass(theme.className, "list-group-item")}>
+          {/* Delay */}
+          {directives.delay && (
+            <li
+              className={getClass(theme.className, "list-group-item")}
+              title={t(
+                `This script will run after ${directives.delay} milliseconds after page load`
+              )}
+            >
               <div className="badge rounded-pill text-bg-secondary me-2">
-                website
+                {t("delay")}
               </div>
-              <a
-                href={directives.website}
-                target="_blank"
-                rel="noreferrer"
-                className="card-link"
-              >
-                {getWebsiteHostName(directives.website)}
-              </a>
+              {t(`${directives.delay / 1000} seconds`)}
             </li>
           )}
+          {/* Exports */}
           {Object.entries(directives.exports).map(([key, type]) => (
             <li
               key={key}
               className={getClass(theme.className, "list-group-item")}
             >
               <div className="badge rounded-pill text-bg-secondary me-2">
-                exports
+                {t("exports")}
               </div>
-              {type}: <code>{key}</code>
+              {t(type)}: <code>{t(key)}</code>
             </li>
           ))}
-          {!canRun && (
-            <li className={getClass(theme.className, "list-group-item")}>
-              <div
-                className="bg-warning bg-opacity-25 border-warning rounded-1 border-3 m-0 border-start px-3 py-2 shadow"
-                style={{ fontSize: "0.9em" }}
-              >
-                <span className="opacity-75">
-                  <i className="bi bi-exclamation-triangle-fill d-inline me-1" />
-                  Cannot run: URL doesn't match
-                </span>
-              </div>
-            </li>
-          )}
-          {error && (
-            <li
-              className={getClass(
-                theme.className,
-                "list-group-item d-flex align-items-center justify-content-between"
-              )}
-            >
-              <em className="text-danger me-2">Error: check the console</em>
-              <button
-                className="btn btn-sm border border-danger text-danger"
-                onClick={() => setError(null)}
-              >
-                Dismiss
-              </button>
-            </li>
-          )}
+          {/* Error messages */}
+          {errors.map((error) => (
+            <ScriptAlert
+              key={error}
+              className="danger"
+              dismiss={() => removeError(error)}
+              message={t(error)}
+            />
+          ))}
+          {/* Warning messages */}
+          {warnings.map((warning) => (
+            <ScriptAlert
+              key={warning}
+              className="warning"
+              dismiss={() => removeWarning(warning)}
+              message={t(warning)}
+            />
+          ))}
         </ul>
       )}
       {selected && (
-        <footer className="card-footer d-flex user-select-none align-items-center justify-content-between">
-          <code className="text-muted">
-            {isLocal(path) ? (
-              <>Local file</>
-            ) : (
-              <a
-                href={getGithubURL(...path, fileName)}
-                target="_blank"
-                rel="noreferrer"
-                className="text-reset text-decoration-none d-flex"
-              >
-                Open on Github
-                <i className="bi bi-box-arrow-up-right ms-2" />
-              </a>
-            )}
-          </code>
+        <footer className="card-footer d-flex align-items-center user-select-none">
+          {!isLocal(path) && (
+            <ScriptButton
+              title={t("Open on Github")}
+              url={getGithubURL(...path, fileName)}
+            >
+              <i className="bi bi-github" />
+            </ScriptButton>
+          )}
+          {websiteInfo && (
+            <ScriptButton title={t("Go to Website")} url={websiteInfo.href}>
+              <i className="bi bi-globe2" />
+            </ScriptButton>
+          )}
+          {isLocal(path) && (
+            <code className="text-muted ms-auto">Local file</code>
+          )}
         </footer>
       )}
     </li>

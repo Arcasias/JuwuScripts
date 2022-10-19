@@ -3,6 +3,7 @@ import { ScriptInfo } from "../scripts";
 import { browser } from "./browser";
 
 interface StorageScriptInfo {
+  delay?: number;
   fileName: string;
   pattern: string | false;
 }
@@ -39,6 +40,9 @@ export const catchError = <T,>(fn: (...args: any[]) => T): ErrorCatcher<T> => {
     return [null, err as Error];
   }
 };
+
+export const choice = <T,>(list: T[]): T =>
+  list[Math.floor(Math.random() * list.length)];
 
 export const copyToClipboard = async (text?: string) =>
   catchAsyncError(async () => {
@@ -97,30 +101,35 @@ export const getPattern = ({ directives }: ScriptInfo) => {
 };
 
 export const getStorageInfo = (script: ScriptInfo): StorageScriptInfo => {
-  const { fileName } = script;
+  const {
+    directives: { delay },
+    fileName,
+  } = script;
   const regexPattern = getPattern(script);
   const pattern = regexPattern && String(regexPattern);
-  return { fileName, pattern };
+  return { delay, fileName, pattern };
 };
 
-export const getWebsiteHostName = (url?: string) => {
-  if (!url) {
-    return false;
-  }
-  const a = document.createElement("a");
-  a.href = url;
-  return a.hostname;
-};
+export const isIcon = (url?: string) => url && /bi-/.test(url);
 
 export const isLocal = (path: string[]) => path.includes("local");
 
-export const isURL = (url: string) => /^https?:\/\//.test(url);
+export const isURL = (url?: string) => url && /^https?:\/\//.test(url);
 
 export const normalize = (str: string, condensed: boolean = false) =>
   str
     .toLowerCase()
     .normalize("NFKD")
     .replace(condensed ? /[^a-z0-9]/g : /[\u0300-\u036f]/g, "");
+
+export const parseWebsite = (url?: string) => {
+  if (!url) {
+    return null;
+  }
+  const a = document.createElement("a");
+  a.href = url;
+  return a;
+};
 
 export const plural = (term: string, amount: number) => {
   if (term.endsWith("'")) {
@@ -138,11 +147,28 @@ export const storageRemove = async (keys: string | string[]) =>
 export const storageSet = async (values: Record<string, any>) =>
   catchAsyncError(() => browser.storage.sync.set(values));
 
+export const uwuify = (text: string) =>
+  text
+    .replaceAll(/r+/g, "w")
+    .replaceAll(/R+/g, "W")
+    .replaceAll(/oo/g, "owo")
+    .replaceAll(/uu/g, "uwu")
+    .replaceAll(
+      /\s*([.!?])(\w?)/g,
+      (full: string, dot: string, after: string) =>
+        after ? full : ` ${UWU_REPLACERS[dot as keyof typeof UWU_REPLACERS]}`
+    );
+
 const REPLACERS: [string, any][] = [
   ["`", "code"],
   ["**", "strong"],
   ["*", "em"],
 ];
+const UWU_REPLACERS = {
+  ".": "UwU",
+  "?": "OwO",
+  "!": ">w<",
+};
 
 // String constants
 export const GITHUB_URL = "https://github.com/Arcasias/scripts/blob/master";

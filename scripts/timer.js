@@ -4,7 +4,7 @@
  * This script should be appended where the timer should start, then the timer can
  * be stopped with `timerStop()` and the results of can be printed with `timerLog()`.
  *
- * @icon stopwatch
+ * @icon bi-stopwatch
  * @run disabled
  */
 

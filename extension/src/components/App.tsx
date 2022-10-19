@@ -12,11 +12,13 @@ import {
   storageGet,
   storageRemove,
   storageSet,
+  uwuify,
 } from "../utils/utils";
 import { Group, ScriptGroup } from "./Group";
 import { Script } from "./Script";
 
 import { TabContext } from "../providers/TabProvider";
+import { TranslationProvider } from "../providers/TranslationProvider";
 import "./App.scss";
 
 const QUERY_STORAGE_KEY = "query";
@@ -66,7 +68,7 @@ export const App = () => {
     ));
 
   const navigate: React.KeyboardEventHandler = (ev) => {
-    if (!scriptsLength || !rootRef.current) {
+    if (!availableScripts || !rootRef.current) {
       return;
     }
     const scriptEls = [...rootRef.current.querySelectorAll(".Script")];
@@ -105,7 +107,7 @@ export const App = () => {
 
   const toggleAutorun = async (script: ScriptInfo) => {
     const id = getId(script);
-    if (!(id in autorun)) {
+    if (!(id in autorun) && canScriptRun(script, tab)) {
       executeScript(script);
     }
     if (autorun[id]) {
@@ -144,7 +146,7 @@ export const App = () => {
   const [autorun, setAutorun] = useState<Record<string, boolean>>({});
   const [displayOptions, setDisplayOptions] = useState(false);
 
-  const [scripts, groups, scriptsLength] = useMemo(() => {
+  const [scripts, groups, availableScripts] = useMemo(() => {
     const filteredScripts = ALL_SCRIPTS.filter(
       (script) =>
         (!filterRunning || autorun[getId(script)]) &&
@@ -157,18 +159,26 @@ export const App = () => {
     const groups: Record<string, ScriptGroup> = {};
     const scripts: ScriptInfo[] = [];
     for (const script of filteredScripts) {
-      const path = groupNameFromPath(script.path);
-      if (path) {
-        if (!(path in groups)) {
-          groups[path] = { name: path, scripts: [] };
+      const name = groupNameFromPath(script.path);
+      if (name) {
+        if (!(name in groups)) {
+          groups[name] = { name, scripts: [] };
         }
-        groups[path].scripts.push(script);
+        groups[name].scripts.push(script);
       } else {
         scripts.push(script);
       }
     }
-    return [scripts, Object.values(groups), filteredScripts.length];
+    return [scripts, Object.values(groups), filteredScripts];
   }, [tab, autorun, searchString, filterEnabled, filterRunning]);
+
+  const t = useMemo(
+    () =>
+      availableScripts.some((s) => s.directives.uwu)
+        ? uwuify
+        : (s: string) => s,
+    [availableScripts]
+  );
 
   const [selected, setSelected] = useState(
     getDefaultState(scripts, groups).selectedScript
@@ -219,104 +229,111 @@ export const App = () => {
   }, [scripts, groups]);
 
   return (
-    <main
-      ref={rootRef}
-      className={getClass(
-        theme.className,
-        "App container-lg d-flex flex-column m-0"
-      )}
-      onKeyDown={navigate}
-    >
-      <div
-        className="d-flex p-2 my-2 shadow"
-        onMouseEnter={() => setDisplayOptions(true)}
-        onMouseLeave={() => setDisplayOptions(false)}
-      >
-        <input
-          ref={inputRef}
-          className={getClass(
-            theme.className,
-            "form-control border-0 p-0 ps-2"
-          )}
-          type="search"
-          name="search"
-          value={searchString}
-          onChange={() => setSearchString(normalize(inputRef.current!.value))}
-          placeholder={`Search accross ${scriptsLength} scripts`}
-          autoFocus
-        />
-        <div className="ms-2 badge rounded-pill shadow d-flex align-items-center">
-          {displayOptions ? (
-            <span className="animation-slide-left">
-              <button
-                className={getClass(
-                  `btn-${theme.is("dark") ? "dark" : "light"}`,
-                  "btn m-0 p-1 me-1 animation-slide-right",
-                  filterEnabled && "text-success"
-                )}
-                onClick={() => setFilterEnabled((current) => !current)}
-                title="Only show scripts that can be run on this page"
-              >
-                <i className="bi bi-play-fill" />
-              </button>
-              <button
-                className={getClass(
-                  `btn-${theme.is("dark") ? "dark" : "light"}`,
-                  "btn m-0 p-1 me-1",
-                  filterRunning && "text-info"
-                )}
-                onClick={() => setFilterRunning((current) => !current)}
-                title="Only show running scripts"
-              >
-                <i className="bi bi-arrow-repeat" />
-              </button>
-              <button
-                className={getClass(
-                  `btn-${theme.is("dark") ? "dark" : "light"}`,
-                  "btn m-0 p-1"
-                )}
-                onClick={() => theme.toggle()}
-                title="Toggle theme"
-              >
-                <i
-                  className={`bi bi-${theme.is("dark") ? "sun" : "moon"}-fill`}
-                />
-              </button>
-            </span>
-          ) : (
-            <button
-              className={getClass(
-                `btn-${theme.is("dark") ? "dark" : "light"}`,
-                "btn m-0 p-1 animation-slide-right"
-              )}
-              onClick={() => setDisplayOptions(true)}
-            >
-              <i className="bi bi-gear-fill" />
-            </button>
-          )}
-        </div>
-      </div>
-      <ul className="scripts overflow-auto pe-1 mb-3 h-100 list-group">
-        {groups.map((group) => (
-          <Group
-            key={group.name}
-            autorun={autorun}
-            group={group}
-            open={openGroups.includes(group.name)}
-            toggleOpen={() => toggleFold(group.name)}
-          >
-            {displayScripts(group.scripts)}
-          </Group>
-        ))}
-        {displayScripts(scripts)}
-        {!scriptsLength && (
-          <em
-            className={getClass(theme.className, "list-group-item text-muted")}
-          >
-            No result {searchString && <>for "{searchString}"</>}
-          </em>
+    <TranslationProvider translate={t}>
+      <main
+        ref={rootRef}
+        className={getClass(
+          theme.className,
+          "App container-lg d-flex flex-column m-0"
         )}
-      </ul>
-    </main>
+        onKeyDown={navigate}
+      >
+        <div
+          className="d-flex p-2 my-2 shadow"
+          onMouseEnter={() => setDisplayOptions(true)}
+          onMouseLeave={() => setDisplayOptions(false)}
+        >
+          <input
+            ref={inputRef}
+            className={getClass(
+              theme.className,
+              "form-control border-0 p-0 ps-2"
+            )}
+            type="search"
+            name="search"
+            value={searchString}
+            onChange={() => setSearchString(normalize(inputRef.current!.value))}
+            placeholder={t(`Search accross ${availableScripts.length} scripts`)}
+            autoFocus
+          />
+          <div className="ms-2 badge rounded-pill shadow d-flex align-items-center">
+            {displayOptions ? (
+              <span className="animation-slide-left">
+                <button
+                  className={getClass(
+                    `btn-${theme.is("dark") ? "dark" : "light"}`,
+                    "btn m-0 p-1 me-1 animation-slide-right",
+                    filterEnabled && "text-success"
+                  )}
+                  onClick={() => setFilterEnabled((current) => !current)}
+                  title={t("Only show scripts that can be run on this page")}
+                >
+                  <i className="bi bi-play-fill" />
+                </button>
+                <button
+                  className={getClass(
+                    `btn-${theme.is("dark") ? "dark" : "light"}`,
+                    "btn m-0 p-1 me-1",
+                    filterRunning && "text-info"
+                  )}
+                  onClick={() => setFilterRunning((current) => !current)}
+                  title={t("Only show running scripts")}
+                >
+                  <i className="bi bi-arrow-repeat" />
+                </button>
+                <button
+                  className={getClass(
+                    `btn-${theme.is("dark") ? "dark" : "light"}`,
+                    "btn m-0 p-1"
+                  )}
+                  onClick={() => theme.toggle()}
+                  title={t("Toggle theme")}
+                >
+                  <i
+                    className={`bi bi-${
+                      theme.is("dark") ? "sun" : "moon"
+                    }-fill`}
+                  />
+                </button>
+              </span>
+            ) : (
+              <button
+                className={getClass(
+                  `btn-${theme.is("dark") ? "dark" : "light"}`,
+                  "btn m-0 p-1 animation-slide-right"
+                )}
+                onClick={() => setDisplayOptions(true)}
+              >
+                <i className="bi bi-gear-fill" />
+              </button>
+            )}
+          </div>
+        </div>
+        <ul className="scripts overflow-auto pe-1 mb-3 h-100 list-group">
+          {groups.map((group) => (
+            <Group
+              key={group.name}
+              autorun={autorun}
+              group={group}
+              open={openGroups.includes(group.name)}
+              toggleOpen={() => toggleFold(group.name)}
+            >
+              {displayScripts(group.scripts)}
+            </Group>
+          ))}
+          {displayScripts(scripts)}
+          {!availableScripts.length && (
+            <em
+              className={getClass(
+                theme.className,
+                "list-group-item text-muted"
+              )}
+            >
+              {t(`No result${searchString && ` for "${searchString}"`}.`)}
+            </em>
+          )}
+        </ul>
+      </main>
+    </TranslationProvider>
   );
 };

@@ -45,7 +45,7 @@ const getDefaultTitle = (fileName: string) =>
 
 const getScriptInfos = async () => {
   const scriptInfo: ScriptBuildInfo[] = [];
-  await readScripts(ROOT_PATH, scriptInfo);
+  await readScripts(join(ROOT_PATH), scriptInfo);
   return sortBy(scriptInfo, (s) => s.directives.title.toLowerCase());
 };
 
@@ -54,7 +54,7 @@ const getScriptURL = ({ fileName, path }: ScriptBuildInfo) => {
   return [GITHUB_URL, ...encoded, encodeURIComponent(fileName)].join("/");
 };
 
-const isFalse = (value: string) => /^(disabled|none)$/i.test(value);
+const isFalse = (value: string) => /^(disabled|none|false)$/i.test(value);
 
 const isNotEmpty = (line?: string) => line?.length && !/^[\s\r\n]+$/.test(line);
 
@@ -62,7 +62,8 @@ const isPublic = (script: ScriptInfo) => !script.path.includes("local");
 
 const isScriptFile = (fileName: string) => /.(js|ts)$/.test(fileName);
 
-const isTrue = (value: string) => !value.length || /^(enabled)$/.test(value);
+const isTrue = (value: string) =>
+  !value.length || /^(enabled|true)$/.test(value);
 
 const jsComment = (comment: string) => `/* ${comment} */`;
 
@@ -74,6 +75,7 @@ const parseCommentBlock = (lines: string[]): [ScriptDirectives, string[]] => {
 
   let startingLine: number = 0;
   let titleLineFound = false;
+  let directiveFound = false;
   let commentFound = false;
   let parsing = false;
 
@@ -100,20 +102,27 @@ const parseCommentBlock = (lines: string[]): [ScriptDirectives, string[]] => {
       }
       const directiveMatch = lineContent.match(DIRECTIVE);
       if (directiveMatch) {
+        directiveFound = true;
+
         // Parse directive
         const [, name, content] = directiveMatch;
         const dirName = name.trim() as keyof ScriptDirectives;
-        let dirValue: string | boolean | RegExp = (content || "").trim();
+        let dirValue: string | boolean | number | RegExp = (
+          content || ""
+        ).trim();
         if (dirName === "pattern") {
           dirValue = new RegExp(dirValue, "i");
+        } else if (dirValue && !isNaN(Number(dirValue))) {
+          dirValue = Number(dirValue);
         } else if (isFalse(dirValue)) {
           dirValue = false;
         } else if (isTrue(dirValue)) {
           dirValue = true;
         }
         (<any>directives)[dirName] = dirValue;
-      } else if (isNotEmpty(lineContent)) {
+      } else if (isNotEmpty(lineContent) && !directiveFound) {
         // Either "title" (first non-directive line) or part of "description"
+        // This stops after the first directive.
         if (titleLineFound) {
           descriptionParts.push(lineContent);
         } else {
@@ -360,7 +369,7 @@ const README_TEMPLATE_PATH = "./src/README.md";
 // String constants
 const CONTENT_PLACEHOLDER = "scripts";
 const GITHUB_URL = "https://github.com/Arcasias/scripts/blob/master";
-const ROOT_PATH = "scripts";
+const ROOT_PATH = process.argv[2] || "./scripts";
 const TEMPLATE_WARNING = "⚠️ PRODUCTION FILE: DO NOT EDIT ⚠️";
 
 // Regular expressions
