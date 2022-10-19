@@ -9,7 +9,10 @@ interface StorageScriptInfo {
 
 export type ErrorCatcher<T> = [T, null] | [null, Error];
 
-export const canScriptRun = (script: ScriptInfo, tab: chrome.tabs.Tab | null) => {
+export const canScriptRun = (
+  script: ScriptInfo,
+  tab: chrome.tabs.Tab | null
+) => {
   if (!tab?.url) {
     return false;
   }
@@ -78,7 +81,7 @@ export const getGithubURL = (...path: string[]) =>
 export const getId = (script: ScriptInfo) =>
   [...script.path, script.fileName].join("/");
 
-export const groupNameFromPath = (path: string[]) => path.slice(1).join("/"); // Omit root path
+export const groupNameFromPath = (path: string[]) => path.slice(1).join(" / "); // Omit root path
 
 export const getPattern = ({ directives }: ScriptInfo) => {
   let rePattern: RegExp | false = false;

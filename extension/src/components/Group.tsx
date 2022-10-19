@@ -63,7 +63,7 @@ export const Group = ({
         idle++;
       }
     }
-    
+
     const titleParts = [];
     if (idle > 0) {
       titleParts.push(`${idle} idle ${plural("script", idle)}`);
@@ -110,7 +110,7 @@ export const Group = ({
           <i className="bi bi-caret-down-fill" />
         </span>
       </h6>
-      {open && <div className="animation-slide-down ps-3">{children}</div>}
+      {open && <div className="animation-slide-down">{children}</div>}
     </React.Fragment>
   );
 };

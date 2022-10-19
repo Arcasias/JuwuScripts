@@ -22,17 +22,28 @@ ensureService("runtime", () => ({
 }));
 
 ensureService("storage", () => {
-  const storage = new Map<string, any>();
+  const PREFIX = "--browser-storage-";
+  const ensureKeys = (keys?: string | string[]) => {
+    keys ||= Object.keys(localStorage)
+      .filter((k) => k.startsWith(PREFIX))
+      .map((k) => k.slice(PREFIX.length));
+    return Array.isArray(keys) ? keys : [keys];
+  };
   return {
     sync: {
-      get: async (...keys: string[]) =>
-        keys.reduce((r, k) => ({ ...r, [k]: storage.get(k) }), {}),
-      remove: async (...keys: string[]) => {
-        keys.forEach((k) => storage.delete(k));
+      get: async (keys?: string | string[]) =>
+        ensureKeys(keys).reduce((prev, curr) => {
+          const value = localStorage.getItem(PREFIX + curr);
+          return { ...prev, [curr]: value && JSON.parse(value) };
+        }, {}),
+      remove: async (keys: string | string[]) => {
+        ensureKeys(keys).forEach((k) => localStorage.removeItem(PREFIX + k));
         console.debug("Storage: remove", keys);
       },
       set: async (values: Record<string, any>) => {
-        Object.entries(values).forEach(([k, v]) => storage.set(k, v));
+        Object.entries(values).forEach(([k, v]) =>
+          localStorage.setItem(PREFIX + k, JSON.stringify(v))
+        );
         console.debug("Storage: set", values);
       },
     },

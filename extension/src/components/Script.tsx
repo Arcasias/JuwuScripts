@@ -11,6 +11,7 @@ import {
   getClass,
   getGithubURL,
   getWebsiteHostName,
+  groupNameFromPath,
   isLocal,
   isURL,
 } from "../utils/utils";
@@ -103,7 +104,11 @@ export const Script = ({
         "Script animation-slide-right border-0",
         selected
           ? "card selected my-2 shadow"
-          : getClass("list-group-item", (image || directives.icon) && "ps-1")
+          : getClass(
+              "list-group-item",
+              (image || directives.icon) && "ps-1",
+              groupNameFromPath(path) && "ms-3"
+            )
       )}
       tabIndex={0}
       onClick={tryToToggleSelected}
@@ -137,7 +142,10 @@ export const Script = ({
               getTextColor(),
               "script-title text-truncate w-100"
             )}
-            title={directives.title + (autorun ? " (running)" : "")}
+            title={
+              directives.title +
+              (canRun ? (autorun ? " (running)" : "") : " (disabled)")
+            }
           >
             {directives.title}
           </span>
@@ -221,6 +229,19 @@ export const Script = ({
               {type}: <code>{key}</code>
             </li>
           ))}
+          {!canRun && (
+            <li className={getClass(theme.className, "list-group-item")}>
+              <div
+                className="bg-warning bg-opacity-25 border-warning rounded-1 border-3 m-0 border-start px-3 py-2 shadow"
+                style={{ fontSize: "0.9em" }}
+              >
+                <span className="opacity-75">
+                  <i className="bi bi-exclamation-triangle-fill d-inline me-1" />
+                  Cannot run: URL doesn't match
+                </span>
+              </div>
+            </li>
+          )}
           {error && (
             <li
               className={getClass(

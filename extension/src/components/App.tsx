@@ -227,10 +227,17 @@ export const App = () => {
       )}
       onKeyDown={navigate}
     >
-      <div className="d-flex p-2 my-2 shadow">
+      <div
+        className="d-flex p-2 my-2 shadow"
+        onMouseEnter={() => setDisplayOptions(true)}
+        onMouseLeave={() => setDisplayOptions(false)}
+      >
         <input
           ref={inputRef}
-          className={getClass(theme.className, "form-control border-0 p-0 ps-2")}
+          className={getClass(
+            theme.className,
+            "form-control border-0 p-0 ps-2"
+          )}
           type="search"
           name="search"
           value={searchString}
@@ -238,11 +245,7 @@ export const App = () => {
           placeholder={`Search accross ${scriptsLength} scripts`}
           autoFocus
         />
-        <div
-          className="ms-2 badge rounded-pill shadow d-flex align-items-center"
-          onMouseEnter={() => setDisplayOptions(true)}
-          onMouseLeave={() => setDisplayOptions(false)}
-        >
+        <div className="ms-2 badge rounded-pill shadow d-flex align-items-center">
           {displayOptions ? (
             <span className="animation-slide-left">
               <button
@@ -286,6 +289,7 @@ export const App = () => {
                 `btn-${theme.is("dark") ? "dark" : "light"}`,
                 "btn m-0 p-1 animation-slide-right"
               )}
+              onClick={() => setDisplayOptions(true)}
             >
               <i className="bi bi-gear-fill" />
             </button>

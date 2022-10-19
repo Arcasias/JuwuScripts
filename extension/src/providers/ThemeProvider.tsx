@@ -50,7 +50,7 @@ export const ThemeProvider = ({ children }: React.PropsWithChildren) => {
       const [result, error] = await storageGet(THEME_STORAGE_KEY);
       if (error) {
         console.debug(error);
-      } else {
+      } else if (result[THEME_STORAGE_KEY]) {
         setTheme(result[THEME_STORAGE_KEY]);
       }
     };
@@ -68,7 +68,7 @@ const AVAILABLE_THEMES: Theme[] = ["dark", "light"];
 const THEME_STORAGE_KEY = "[THEME]";
 
 const defaultTheme = getDefaultTheme();
-let storageTheme: string | null = null;
+let storageTheme: string = defaultTheme;
 
 export const ThemeContext = createContext<ThemeActions>(
   makeThemeActions(defaultTheme, () => {})
