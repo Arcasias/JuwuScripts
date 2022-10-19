@@ -9,7 +9,7 @@ interface StorageScriptInfo {
 }
 
 export type ErrorCatcher<T> = [T, null] | [null, Error];
-type Replacer = (substring: string, ...args: any[]) => string;
+export type Replacer = (substring: string, ...args: any[]) => string;
 
 export const canScriptRun = (
   script: ScriptInfo,
@@ -164,13 +164,6 @@ export const storageRemove = async (keys: string | string[]) =>
 export const storageSet = async (values: Record<string, any>) =>
   catchAsyncError(() => browser.storage.sync.set(values));
 
-export const uwuify = (text: string) =>
-  UWU_REPLACERS.reduce(
-    (current, [regex, replacer]) =>
-      (current = current.replace(regex, replacer as Replacer)),
-    text
-  );
-
 // String constants
 export const GITHUB_URL = "https://github.com/Arcasias/scripts/blob/master";
 
@@ -179,27 +172,4 @@ const REPLACERS: [string, any][] = [
   ["`", "code"],
   ["**", "strong"],
   ["*", "em"],
-];
-const UWU_DOT_REPLACERS: Record<string, string> = {
-  ".": "UwU",
-  "?": "OwO",
-  "!": ">w<",
-};
-const UWU_INSERT_W = "$1w$2";
-const UWU_REPLACERS: [RegExp, string | Replacer][] = [
-  [/\b(t|d)o\b/gi, "$1uwu"],
-  [/\bgo\b/gi, caseReplacer("gow")],
-  [/\byou\b/gi, caseReplacer("uwu")],
-  [/\bwindow\b/gi, caseReplacer("windowo")],
-  [/\b(ca)(n)\b/gi, UWU_INSERT_W],
-  [/\b(no)(t)\b/gi, UWU_INSERT_W],
-  [/\b(tha)(t)\b/gi, UWU_INSERT_W],
-  [/\b(thi)(s)\b/gi, UWU_INSERT_W],
-  [/\b(the)(m)\b/gi, UWU_INSERT_W],
-  [/[rl]/gi, caseReplacer("w")],
-  [/(o)(o)/gi, UWU_INSERT_W],
-  [
-    /\s*([.!?])(\w?)/g,
-    (full, dot, after) => (after ? full : ` ${UWU_DOT_REPLACERS[dot]}`),
-  ],
 ];

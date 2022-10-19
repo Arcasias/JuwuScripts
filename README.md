@@ -24,6 +24,7 @@ You can [build and use](#how-to-use) the integrated Chrome extension to have a p
 - [Spongebobify](https://github.com/Arcasias/scripts/blob/master/scripts/spongebobify.js)
 - [Storage analyzer](https://github.com/Arcasias/scripts/blob/master/scripts/Storage/storage_analyzer.js)
 - [Storage eraser](https://github.com/Arcasias/scripts/blob/master/scripts/Storage/storage_eraser.js)
+- [UwUify](https://github.com/Arcasias/scripts/blob/master/scripts/uwuify.js)
 
 ## <a name="how-to-use"></a> How to use
 

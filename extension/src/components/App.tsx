@@ -12,13 +12,13 @@ import {
   storageGet,
   storageRemove,
   storageSet,
-  uwuify,
 } from "../utils/utils";
 import { Group, ScriptGroup } from "./Group";
 import { Script } from "./Script";
 
 import { TabContext } from "../providers/TabProvider";
 import { TranslationProvider } from "../providers/TranslationProvider";
+import { uwuify } from "../utils/uwutils";
 import "./App.scss";
 
 const QUERY_STORAGE_KEY = "query";
