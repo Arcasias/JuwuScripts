@@ -70,6 +70,16 @@ export const Script = ({
     }
   };
 
+  const onKeyDown: React.KeyboardEventHandler = (ev) => {
+    if (ev.key === "Enter") {
+      if (directives.run) {
+        runScript();
+      } else if (!isClipboard && directives.autorun) {
+        toggleAutorun();
+      }
+    }
+  };
+
   const runScript = async () => {
     let result: ErrorCatcher<void>;
     if (isClipboard) {
@@ -87,7 +97,7 @@ export const Script = ({
     }
   };
 
-  const tryToToggleSelected = (ev: React.MouseEvent | React.KeyboardEvent) => {
+  const tryToToggleSelected = (ev: React.MouseEvent) => {
     if (!selected || (ev.target as HTMLElement).closest(".card-title")) {
       toggleSelected();
     }
@@ -146,7 +156,7 @@ export const Script = ({
       )}
       tabIndex={0}
       onClick={tryToToggleSelected}
-      onKeyDown={(ev) => ev.key === "Enter" && tryToToggleSelected(ev)}
+      onKeyDown={onKeyDown}
     >
       <div className="card-body">
         {/* Header */}

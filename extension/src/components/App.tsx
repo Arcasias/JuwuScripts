@@ -71,22 +71,24 @@ export const App = () => {
     if (!availableScripts || !rootRef.current) {
       return;
     }
-    const scriptEls = [...rootRef.current.querySelectorAll(".Script")];
+    const focusableEls = [
+      ...rootRef.current.querySelectorAll(`[tabindex="0"]`),
+    ];
     const { activeElement } = document;
-    const activeScript = activeElement?.closest(".Script");
-    const index = activeScript ? scriptEls.indexOf(activeScript) : -1;
+    const activeEl = activeElement?.closest(`[tabindex="0"]`);
+    const index = activeEl ? focusableEls.indexOf(activeEl) : -1;
     const key = ev.key.toLowerCase();
     switch (key) {
       case "arrowup": {
         ev.preventDefault();
-        const prevEl = scriptEls.at(Math.max(index - 1, -1)) as HTMLElement;
+        const prevEl = focusableEls.at(Math.max(index - 1, -1)) as HTMLElement;
         prevEl.focus();
         break;
       }
       case "arrowdown": {
         ev.preventDefault();
-        const nextEl = scriptEls.at(
-          (index + 1) % scriptEls.length
+        const nextEl = focusableEls.at(
+          (index + 1) % focusableEls.length
         ) as HTMLElement;
         nextEl.focus();
         break;

@@ -80,7 +80,7 @@ export const Group = ({
     const title = `${group.name}: ${titleParts.join(", ")}`;
 
     return [idle, running, disabled, title];
-  }, [tab, group.name, group.scripts, autorun]);
+  }, [tab, group, autorun]);
 
   return (
     <React.Fragment key={group.name}>
@@ -90,7 +90,9 @@ export const Group = ({
           "script-group-name text-secondary list-group-item user-select-none ps-2 m-0 border-0 d-flex animation-slide-right"
         )}
         onClick={toggleOpen}
+        onKeyDown={(ev) => ev.key === "Enter" && toggleOpen()}
         title={t(title)}
+        tabIndex={0}
       >
         <span className="me-2">
           <i className="bi bi-folder-fill" />
