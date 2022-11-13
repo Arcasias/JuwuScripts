@@ -2,16 +2,15 @@
   "name": "juwuscripts",
   "version": "0.1.0",
   "description": "Collection of QoL and quirky scripts. Feel free to use them.",
-  "main": "./loader.ts",
+  "main": "./src/loader.ts",
   "scripts": {
-    "build:prettier": "prettier --write \"./*.{js,ts}\" \"./scripts/**/*.{js,ts}\" \"./extension/src/**/*.{js,jsx,ts,tsx}\"",
-    "build:loader": "ts-node ./loader.ts",
-    "build:background": "tsc --project ./src/background/tsconfig.json && uglifyjs ./extension/background.js -o ./extension/background.js",
-    "build:extension": "npm run build:background && cd ./extension && npm run build && cd ..",
-    "build": "npm run build:prettier && npm run build:loader -- && npm run build:background && npm run build:extension",
-    "create": "npm install && cd ./extension && npm install && cd .. && npm run build:loader -- && npm run build:background && npm run build:extension",
+    "prettier": "npx prettier --write \"./src/*.{js,ts}\" \"./scripts/**/*.{js,ts}\" \"./extension/src/**/*.{js,jsx,ts,tsx}\"",
+    "build:loader": "npx ts-node ./src/loader.ts",
+    "build:extension": "cd ./extension && npm run build && cd ..",
+    "build": "npm run prettier && npm run build:loader -- && npm run build:extension",
+    "make": "npm install && cd ./extension && npm install && cd .. && npm run build:loader -- && npm run build:extension",
     "start": "cd ./extension && npm start",
-    "zip": "npm run build && ts-node ./zipper.ts"
+    "zip": "npm run build && npx ts-node ./src/zipper.ts"
   },
   "repository": {
     "type": "git",
@@ -37,6 +36,7 @@
     "jimp": "^0.16.2",
     "prettier": "^2.4.1",
     "ts-node": "^10.9.1",
+    "typescript": "^4.8.4",
     "uglify-js": "^3.17.2"
   }
 }

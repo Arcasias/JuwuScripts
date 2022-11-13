@@ -6,6 +6,7 @@ package-lock.json
 extension/build/
 extension/scripts/
 extension/src/scripts.ts
+extension/manifest.json
 extension/**/*.js
 extension/**/*.png
 extension/**/*.ico

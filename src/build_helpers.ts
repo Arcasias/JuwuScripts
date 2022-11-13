@@ -1,18 +1,39 @@
-import { existsSync, statSync } from "fs";
-import { mkdir, readdir, readFile, rm, writeFile } from "fs/promises";
-import Jimp from "jimp";
+import archiver from "archiver";
+import { exec } from "child_process";
+import { createWriteStream, statSync } from "fs";
+import { readdir, readFile } from "fs/promises";
 import { join } from "path";
 import { minify } from "uglify-js";
-import { ScriptDirectives, ScriptInfo } from "./src/scripts";
+import { promisify } from "util";
+import { ScriptDirectives, ScriptInfo } from "./templates/scripts";
+
+interface ArchiveContent {
+  files: (string | [string, string])[];
+  folders: string[];
+}
 
 interface WrapperOptions {
   async?: boolean;
 }
 
-type ScriptBuildInfo = ScriptInfo & { content: string };
+export type IconFileName = `icon${number}.png`;
+export type ScriptBuildInfo = ScriptInfo & { content: string };
 
-// Helpers
-const buildContent = (
+export const asyncExec = promisify(exec);
+
+const changeKey = (
+  object: Record<any, any> | null,
+  oldKey: string,
+  newKey: string
+) => {
+  if (!object || object[oldKey] === undefined) {
+    return;
+  }
+  object[newKey] = object[oldKey];
+  delete object[oldKey];
+};
+
+export const buildContent = (
   template: string,
   content: string,
   commentFactory: (text: string) => string
@@ -30,6 +51,16 @@ const capitalize = (string: string) =>
 
 const cleanLine = (line: string) => line.replaceAll(/[\r\n]+/g, "");
 
+export const getCLIArg = <T extends string>(...options: string[]): T | null => {
+  for (let i = 0; i < process.argv.length; i++) {
+    const arg = process.argv[i];
+    if (options.includes(arg)) {
+      return process.argv[i + 1] as T;
+    }
+  }
+  return null;
+};
+
 const getDefaultDirectives = (): ScriptDirectives => ({
   autorun: true,
   exports: {},
@@ -43,13 +74,26 @@ const getDefaultTitle = (fileName: string) =>
     camelTo(snakeTo(fileName.split(".").slice(0, -1).join(" "), " "), " ")
   );
 
-const getScriptInfos = async () => {
+export const getManifestContent = async (sourcePath: `${string}.json`) => {
+  const stringContent = await readFile(sourcePath, "utf-8");
+  const content = JSON.parse(stringContent) as Record<string, any>;
+  if (Array.isArray(content.icons)) {
+    const icons: Record<string, IconFileName> = {};
+    for (const icon of content.icons) {
+      icons[String(icon)] = makeIconFileName(icon);
+    }
+    content.icons = icons;
+  }
+  return content;
+};
+
+export const getScriptInfos = async (path: string) => {
   const scriptInfo: ScriptBuildInfo[] = [];
-  await readScripts(join(ROOT_PATH), scriptInfo);
+  await readScripts(join(path), scriptInfo);
   return sortBy(scriptInfo, (s) => s.directives.title.toLowerCase());
 };
 
-const getScriptURL = ({ fileName, path }: ScriptBuildInfo) => {
+export const getScriptURL = ({ fileName, path }: ScriptBuildInfo) => {
   const encoded = path.map(encodeURIComponent);
   return [GITHUB_URL, ...encoded, encodeURIComponent(fileName)].join("/");
 };
@@ -58,16 +102,72 @@ const isFalse = (value: string) => /^(disabled|none|false)$/i.test(value);
 
 const isNotEmpty = (line?: string) => line?.length && !/^[\s\r\n]+$/.test(line);
 
-const isPublic = (script: ScriptInfo) => !script.path.includes("local");
+export const isPublic = (script: ScriptInfo) => !script.path.includes("local");
 
 const isScriptFile = (fileName: string) => /.(js|ts)$/.test(fileName);
 
 const isTrue = (value: string) =>
   !value.length || /^(enabled|true)$/.test(value);
 
-const jsComment = (comment: string) => `/* ${comment} */`;
+export const jsComment = (comment: string) => `/* ${comment} */`;
 
-const mdComment = (comment: string) => `[//]: # (${comment})`;
+export const makeArchive = (
+  sourceDir: string,
+  archiveName: string,
+  content: ArchiveContent
+) => {
+  const output = createWriteStream(archiveName);
+  const archive = archiver("zip", {
+    zlib: { level: 9 },
+  });
+
+  output.on("close", () => {
+    console.log(`${archive.pointer()} total bytes`);
+    console.log(
+      "archiver has been finalized and the output file descriptor has closed."
+    );
+  });
+
+  output.on("end", () => {
+    console.log("Data has been drained");
+  });
+
+  archive.on("warning", (err) => {
+    if (err.code === "ENOENT") {
+      console.warn(err);
+    } else {
+      throw err;
+    }
+  });
+
+  archive.on("error", (err) => {
+    throw err;
+  });
+
+  archive.pipe(output);
+
+  for (let fileName of content.files) {
+    let alias: string;
+    if (Array.isArray(fileName)) {
+      [fileName, alias] = fileName;
+    } else {
+      alias = fileName;
+    }
+    const filePath = join(sourceDir, fileName);
+    console.log(`Added file "${filePath}" as "${alias}"`);
+    archive.file(filePath, { name: alias });
+  }
+
+  for (const folderName of content.folders) {
+    const folderPath = join(sourceDir, folderName, "");
+    console.log(`Added folder "${folderPath}" as "${folderName}"`);
+    archive.directory(folderPath, folderName);
+  }
+
+  archive.finalize();
+};
+
+export const mdComment = (comment: string) => `[//]: # (${comment})`;
 
 const parseCommentBlock = (lines: string[]): [ScriptDirectives, string[]] => {
   const directives = getDefaultDirectives();
@@ -247,7 +347,7 @@ const readScripts = async (folder: string, scripts: ScriptBuildInfo[]) => {
   );
 };
 
-const serialize = (value: any): string => {
+export const serialize = (value: any): string => {
   if (Array.isArray(value)) {
     return `[${value.map(serialize).join(",")}]`;
   } else if (value && typeof value === "object" && !(value instanceof RegExp)) {
@@ -288,88 +388,11 @@ const wrapInObserver = (code: string, options?: WrapperOptions) =>
     { async: false }
   );
 
-// Builders
-const buildIcons = async () => {
-  const startTime = Date.now();
-  const templateIcon = await Jimp.read(ICON_TEMPLATE_PATH);
-  await Promise.all(
-    ICON_SIZES_AND_PATHS.map(([size, path]) => {
-      const iconPath = join(ICON_PATH, path);
-      return templateIcon.clone().resize(size, size).write(iconPath);
-    })
-  );
-  console.log(`Icons finished building in`, Date.now() - startTime, "ms");
-};
-
-const buildJsScript = (info: ScriptBuildInfo) => {
-  const relevantInfo: Partial<ScriptBuildInfo> = { ...info };
-  if (relevantInfo.directives!.run !== "clipboard") {
-    delete relevantInfo.content;
-  }
-  return serialize(relevantInfo as ScriptInfo);
-};
-
-const buildMdIndexEntry = (scriptInfo: ScriptBuildInfo) =>
-  `- [${scriptInfo.directives.title}](${getScriptURL(scriptInfo)})`;
-
-const buildREADME = async (scriptInfos: ScriptBuildInfo[]) => {
-  const template = await readFile(README_TEMPLATE_PATH, "utf8");
-  const indexEntries = scriptInfos.filter(isPublic).map(buildMdIndexEntry);
-  const content = indexEntries.join("\n");
-
-  await writeFile(README_PATH, buildContent(template, content, mdComment));
-};
-
-const buildScriptInfos = async (scriptInfos: ScriptBuildInfo[]) => {
-  const template = await readFile(POPUP_SCRIPTS_TEMPLATE_PATH, "utf8");
-  const scripts = scriptInfos.map(buildJsScript);
-  const content = scripts.join(",\n  ");
-
-  await writeFile(
-    POPUP_SCRIPTS_PATH,
-    buildContent(template, content, jsComment)
-  );
-};
-
-const buildScriptContents = async (scriptInfos: ScriptBuildInfo[]) => {
-  if (existsSync(BUILT_SCRIPTS_PATH)) {
-    await rm(BUILT_SCRIPTS_PATH, { recursive: true });
-  }
-  await mkdir(BUILT_SCRIPTS_PATH);
-  await Promise.all(
-    scriptInfos.map(({ fileName, content }) =>
-      writeFile(join(BUILT_SCRIPTS_PATH, fileName), content)
-    )
-  );
-};
-
-const buildScripts = async () => {
-  const startTime = Date.now();
-  const scriptInfos = await getScriptInfos();
-  await Promise.all(
-    [buildREADME, buildScriptInfos, buildScriptContents].map((fn) =>
-      fn(scriptInfos)
-    )
-  );
-  console.log(`Scripts finished building in`, Date.now() - startTime, "ms");
-};
-
-// Paths
-const BUILT_SCRIPTS_PATH = "./extension/scripts";
-
-const ICON_PATH = "./extension";
-const ICON_TEMPLATE_PATH = "./src/icon.png";
-
-const POPUP_SCRIPTS_PATH = "./extension/src/scripts.ts";
-const POPUP_SCRIPTS_TEMPLATE_PATH = "./src/scripts.ts";
-
-const README_PATH = "./README.md";
-const README_TEMPLATE_PATH = "./src/README.md";
+const makeIconFileName = (size: number): IconFileName => `icon${size}.png`;
 
 // String constants
 const CONTENT_PLACEHOLDER = "scripts";
 const GITHUB_URL = "https://github.com/Arcasias/scripts/blob/master";
-const ROOT_PATH = process.argv[2] || "./scripts";
 const TEMPLATE_WARNING = "⚠️ PRODUCTION FILE: DO NOT EDIT ⚠️";
 
 // Regular expressions
@@ -377,18 +400,3 @@ const COMMENT_START = /^\s*\/\*\*?/;
 const COMMENT_LINE = /^\s*\*/;
 const COMMENT_END = /\*\/\s*$/;
 const DIRECTIVE = /@([\w-]+)(.*)?/;
-
-// Other constants
-const ICON_SIZES_AND_PATHS: [number, string][] = [
-  [16, "public/favicon.ico"],
-  [16, "icon16.png"],
-  [48, "icon48.png"],
-  [128, "icon128.png"],
-];
-
-// Main
-(async () => {
-  const startTime = Date.now();
-  await Promise.all([buildScripts(), buildIcons()]);
-  console.log("Loader finished in", Date.now() - startTime, "ms");
-})();

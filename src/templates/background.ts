@@ -12,6 +12,8 @@ interface ExecuteScriptPayload {
 type MessagePayload = ExecuteScriptPayload;
 
 const browser: typeof chrome = globalThis.chrome || (globalThis as any).browser;
+const isV2 = "browserAction" in browser;
+const browserAction = isV2 ? "browserAction" : "action";
 
 const BLACKLISTED_URL = /^(chrome|file|about):/i;
 const SCRIPTS_PATH = "./scripts/";
@@ -89,15 +91,25 @@ const executeScripts = async (
   tabScripts.set(tab.id, executedScripts);
 
   // Updates the badge and executes synchronous scripts
-  const promises: Promise<any>[] = [updateBadge(tab.id, String(executedScripts.size))];
+  const promises: Promise<any>[] = [
+    updateBadge(tab.id, String(executedScripts.size)),
+  ];
   if (syncScripts.length) {
-    promises.push(
-      browser.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: syncScripts.map(({ fileName }) => SCRIPTS_PATH + fileName),
-        world: "MAIN",
-      })
-    );
+    if (isV2) {
+      for (const { fileName } of syncScripts) {
+        promises.push(
+          browser.tabs.executeScript({ file: SCRIPTS_PATH + fileName })
+        );
+      }
+    } else {
+      promises.push(
+        browser.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: syncScripts.map(({ fileName }) => SCRIPTS_PATH + fileName),
+          world: "MAIN",
+        })
+      );
+    }
   }
 
   try {
@@ -133,8 +145,8 @@ const matchPattern = (pattern: string, url: string) => {
 
 const updateBadge = async (tabId: number, text: string, color = "#ffa030") => {
   await Promise.all([
-    browser.action.setBadgeText({ tabId, text }),
-    browser.action.setBadgeBackgroundColor({ tabId, color }),
+    browser[browserAction].setBadgeText({ tabId, text }),
+    browser[browserAction].setBadgeBackgroundColor({ tabId, color }),
   ]);
 };
 
