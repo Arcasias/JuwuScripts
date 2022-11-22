@@ -1,9 +1,5 @@
 // Current browser API
-if (!globalThis.chrome) {
-  globalThis.chrome = (globalThis as any).browser;
-}
-
-export const browser = globalThis.chrome;
+export const browser = globalThis.chrome || (globalThis as any).browser || {};
 
 const ensureService = <T extends keyof typeof chrome>(
   name: T,

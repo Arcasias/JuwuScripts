@@ -3,7 +3,7 @@ node_modules/
 package-lock.json
 
 # Built shit
-extension/build/
+extension/dist/
 extension/scripts/
 extension/src/scripts.ts
 extension/manifest.json

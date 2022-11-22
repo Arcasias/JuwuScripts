@@ -21,18 +21,6 @@ export type ScriptBuildInfo = ScriptInfo & { content: string };
 
 export const asyncExec = promisify(exec);
 
-const changeKey = (
-  object: Record<any, any> | null,
-  oldKey: string,
-  newKey: string
-) => {
-  if (!object || object[oldKey] === undefined) {
-    return;
-  }
-  object[newKey] = object[oldKey];
-  delete object[oldKey];
-};
-
 export const buildContent = (
   template: string,
   content: string,

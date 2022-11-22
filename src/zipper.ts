@@ -9,7 +9,7 @@ const EXPORTED_FILES = [
   "icon48.png",
   "icon128.png",
 ];
-const EXPORTED_FOLDERS = ["build", "src/img", "scripts"];
+const EXPORTED_FOLDERS = ["dist", "src/img", "scripts"];
 const SOURCE_DIR = "./extension";
 const TARGET_FILE = "./extension.zip";
 

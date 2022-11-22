@@ -5,6 +5,7 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
     "moduleResolution": "node",
     "target": "ESNext",
     "lib": [
@@ -19,5 +20,6 @@
     ],
     "rootDir": "."
   },
-  "exclude": ["./node_modules"]
+  "include": ["./src/**/*"],
+  "exclude": ["./node_modules/**/*"]
 }

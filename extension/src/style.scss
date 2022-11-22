@@ -2,8 +2,8 @@
 @import "./style/bootstrap.overrides.scss";
 
 // Bootstrap main lib + icons
-@import "~bootstrap/scss/bootstrap";
-@import "~bootstrap-icons/font/bootstrap-icons";
+@import "~bootstrap/scss/bootstrap.scss";
+@import "~bootstrap-icons/font/bootstrap-icons.css";
 
 // Root variables
 @import "./style/root.scss";

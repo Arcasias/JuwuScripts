@@ -21,13 +21,7 @@ import { ScriptInfo } from "./templates/scripts";
 
 // Builders
 const buildBackground = async () => {
-  const compileCommand = [
-    "npx tsc",
-    BACKGROUND_TEMPLATE_PATH,
-    "--outfile",
-    BACKGROUND_PATH,
-    "--target ESNext && uglifyjs ./extension/background.js -o ./extension/background.js",
-  ].join(" ");
+  const compileCommand = `npx tsc --project ${BACKGROUND_TSCONFIG}`;
   console.debug("Executing shell command:", compileCommand);
   const compileResult = await asyncExec(compileCommand);
   if (compileResult.stderr) {
@@ -136,7 +130,7 @@ const buildScripts = async () => {
 
 // Paths
 const BACKGROUND_PATH = "./extension/background.js";
-const BACKGROUND_TEMPLATE_PATH = "./src/templates/background.ts";
+const BACKGROUND_TSCONFIG = "./src/templates/background.tsconfig.json";
 
 const BUILT_SCRIPTS_PATH = "./extension/scripts";
 const BUILT_SCRIPTS_TEMPLATE_PATH = getCLIArg("--scripts", "-s") || "./scripts";

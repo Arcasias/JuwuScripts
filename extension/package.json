@@ -4,19 +4,21 @@
   "private": true,
   "homepage": "./",
   "dependencies": {
+    "@vitejs/plugin-react": "^2.2.0",
     "bootstrap": "^5.2.2",
     "bootstrap-icons": "^1.9.1",
     "prettier": "^2.7.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "sass": "^1.54.9"
+    "sass": "^1.54.9",
+    "vite": "^3.2.4",
+    "vite-plugin-svgr": "^2.2.2",
+    "vite-tsconfig-paths": "^3.6.0"
   },
   "scripts": {
-    "start": "npx react-scripts start",
-    "build": "npx react-scripts build",
-    "test": "npx react-scripts test",
-    "eject": "npx react-scripts eject"
+    "start": "npx vite",
+    "build": "npx vite build",
+    "serve": "npx vite preview"
   },
   "eslintConfig": {
     "extends": [
@@ -37,6 +39,7 @@
   },
   "devDependencies": {
     "@types/chrome": "^0.0.198",
+    "@types/node": "^18.11.9",
     "@types/react": "^18.0.21",
     "@types/react-dom": "^18.0.6"
   }

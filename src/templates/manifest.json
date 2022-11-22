@@ -9,7 +9,7 @@
   "permissions": ["activeTab", "background", "scripting", "storage", "tabs"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "action": {
-    "default_popup": "./build/index.html"
+    "default_popup": "./dist/index.html"
   },
   "icons": [16, 48, 128]
 }
