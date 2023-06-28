@@ -10,6 +10,7 @@ You can [build and use](#how-to-use) the integrated Chrome extension to have a p
 ## <a name="index"></a> Index
 
 - [Auto login](https://github.com/Arcasias/scripts/blob/master/scripts/Odoo%20Buddy/odoo_login.js)
+- [Better console](https://github.com/Arcasias/scripts/blob/master/scripts/better_console.js)
 - [Cross-reload timer](https://github.com/Arcasias/scripts/blob/master/scripts/timer.js)
 - [Dark mode](https://github.com/Arcasias/scripts/blob/master/scripts/Odoo%20Buddy/odoo_dark_mode.js)
 - [Global scanner](https://github.com/Arcasias/scripts/blob/master/scripts/glob_scanner.js)
